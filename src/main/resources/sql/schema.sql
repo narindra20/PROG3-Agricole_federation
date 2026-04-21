@@ -38,6 +38,20 @@ CREATE TABLE collectivity (
     is_authorized BOOLEAN DEFAULT FALSE
 );
 
+CREATE TABLE collectivity_member (
+    collectivity_id INT REFERENCES collectivity(id),
+    member_id INT REFERENCES member(id),
+    PRIMARY KEY (collectivity_id, member_id)
+);
+
+CREATE TABLE collectivity_structure (
+    collectivity_id INT PRIMARY KEY REFERENCES collectivity(id),
+    president_id INT REFERENCES member(id),
+    vice_president_id INT REFERENCES member(id),
+    treasurer_id INT REFERENCES member(id),
+    secretary_id INT REFERENCES member(id)
+);
+
 -- =========================
 -- MEMBER
 -- =========================
