@@ -1,2 +1,1 @@
 CREATE DATABASE agricultural_federation;
-CREATE SCHEMA mon_schema AUTHORIZATION mon_user;
