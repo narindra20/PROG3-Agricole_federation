@@ -1,20 +1,20 @@
-package hei.school.agricole.entity;
+package hei.school.agricole.dto;
 
 import hei.school.agricole.enums.Gender;
 import hei.school.agricole.enums.MemberOccupation;
 
 import java.time.LocalDate;
+import java.util.List;
 
-public class Member {
+public class CreateMember {
 
-    private int id;
-    private String lastName;
     private String firstName;
+    private String lastName;
     private LocalDate birthDate;
 
     private Gender gender;
-    private String address;
 
+    private String address;
     private String phone;
     private String email;
 
@@ -24,13 +24,19 @@ public class Member {
 
     private MemberOccupation occupation;
 
+    private List<Integer> referees;
 
-    public int getId() {
-        return id;
+    private boolean registrationFeePaid;
+    private boolean membershipDuesPaid;
+
+
+
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
     public String getLastName() {
@@ -39,14 +45,6 @@ public class Member {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
     }
 
     public LocalDate getBirthDate() {
@@ -111,5 +109,29 @@ public class Member {
 
     public void setOccupation(MemberOccupation occupation) {
         this.occupation = occupation;
+    }
+
+    public List<Integer> getReferees() {
+        return referees;
+    }
+
+    public void setReferees(List<Integer> referees) {
+        this.referees = referees;
+    }
+
+    public boolean isRegistrationFeePaid() {
+        return registrationFeePaid;
+    }
+
+    public void setRegistrationFeePaid(boolean registrationFeePaid) {
+        this.registrationFeePaid = registrationFeePaid;
+    }
+
+    public boolean isMembershipDuesPaid() {
+        return membershipDuesPaid;
+    }
+
+    public void setMembershipDuesPaid(boolean membershipDuesPaid) {
+        this.membershipDuesPaid = membershipDuesPaid;
     }
 }

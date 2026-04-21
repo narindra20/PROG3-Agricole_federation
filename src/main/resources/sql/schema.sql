@@ -52,7 +52,7 @@ CREATE TABLE member (
     phone VARCHAR(20) UNIQUE,
     email VARCHAR(100) UNIQUE,
     membership_date DATE,
-    profession profession_enum
+    occupation member_occupation
 );
 
 -- =========================
