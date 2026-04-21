@@ -16,7 +16,7 @@ public class DataSource {
     @Bean
     public Connection getConnection() {
         try {
-            return DriverManager.getConnection("jdbc:postgresql://localhost:5432/federation_agricole", "postgres", "postgres");
+            return DriverManager.getConnection("jdbc:postgresql://localhost:5432/agricultural_federation", "postgres", "postgres");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
