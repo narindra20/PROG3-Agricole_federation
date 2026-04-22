@@ -223,3 +223,73 @@ CREATE TABLE mobile_money_account (
     provider VARCHAR(50),
     phone_number VARCHAR(20)
 );
+
+
+
+---------NEW TABLE----------------
+CREATE TABLE collectivity (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    number VARCHAR(50) NOT NULL,
+    location VARCHAR(255) NOT NULL,
+    creation_date DATE NOT NULL
+);
+
+CREATE TABLE member (
+    id SERIAL PRIMARY KEY,
+    first_name VARCHAR(255),
+    last_name VARCHAR(255),
+    collectivity_id INTEGER REFERENCES collectivity(id),
+    phone VARCHAR(20),
+    email VARCHAR(255),
+    birth_date DATE,
+    gender VARCHAR(10),
+    address TEXT,
+    profession VARCHAR(255),
+    occupation VARCHAR(20),
+    membership_date DATE
+);
+
+CREATE TABLE membership_fee (
+    id SERIAL PRIMARY KEY,
+    collectivity_id INT REFERENCES collectivity(id),
+    eligible_from DATE,
+    frequency VARCHAR(20),
+    amount DOUBLE PRECISION,
+    label VARCHAR(255),
+    status VARCHAR(20)
+);
+
+CREATE TABLE financial_account (
+    id SERIAL PRIMARY KEY,
+    collectivity_id INT NULL REFERENCES collectivity(id),
+    type VARCHAR(10),
+    amount DOUBLE PRECISION DEFAULT 0,
+    holder_name VARCHAR(255),
+    mobile_service VARCHAR(20),
+    mobile_number VARCHAR(20),
+    bank_name VARCHAR(20),
+    bank_code INT,
+    branch_code INT,
+    account_number VARCHAR(20),
+    rib_key INT
+);
+
+CREATE TABLE collectivity_transaction (
+    id SERIAL PRIMARY KEY,
+    collectivity_id INT REFERENCES collectivity(id),
+    creation_date DATE,
+    amount DOUBLE PRECISION,
+    payment_mode VARCHAR(20),
+    account_credited_id INT REFERENCES financial_account(id),
+    member_debited_id INT REFERENCES member(id)
+);
+
+CREATE TABLE member_payment (
+    id SERIAL PRIMARY KEY,
+    member_id INT REFERENCES member(id),
+    amount INT,
+    payment_mode VARCHAR(20),
+    membership_fee_id INT REFERENCES membership_fee(id),
+    creation_date DATE
+);

@@ -44,3 +44,10 @@ INSERT INTO contribution (
 )
 VALUES
 (1, 1, 50000, '2025-03-01', 'CASH', 'MONTHLY');
+
+
+---Financial Account
+INSERT INTO financial_account (id, collectivity_id, type, amount, holder_name)
+VALUES (1, '1', 'CASH', 0.0, 'Caisse collective');
+INSERT INTO financial_account (id, collectivity_id, type, amount, holder_name)
+VALUES (2, NULL, 'CASH', 0.0, 'Compte Fédération');

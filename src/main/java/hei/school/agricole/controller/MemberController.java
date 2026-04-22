@@ -33,7 +33,7 @@ public class MemberController {
     }
 
     @GetMapping("/{id}")
-    public Member getById(@PathVariable int id) {
+    public Member getById(@PathVariable String id) {
         Member m = memberService.findById(id);
         if (m == null) {
             throw new RuntimeException("Member not found");
@@ -42,7 +42,7 @@ public class MemberController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable int id) {
+    public ResponseEntity<Void> delete(@PathVariable String id) {
         memberService.delete(id);
         return ResponseEntity.noContent().build();
     }

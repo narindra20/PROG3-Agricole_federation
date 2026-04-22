@@ -5,7 +5,6 @@ import hei.school.agricole.dto.CollectivityInformation;
 import hei.school.agricole.entity.Collectivity;
 import hei.school.agricole.repository.CollectivityRepository;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -23,36 +22,22 @@ public class CollectivityService {
     }
 
     public Collectivity create(CreateCollectivity request) {
-
-        if (!Boolean.TRUE.equals(request.getFederationApproval())) {
-            throw new RuntimeException("Federation approval required");
-        }
-
-        Collectivity c = new Collectivity();
-        c.setLocation(request.getLocation());
-        c.setCreationDate(LocalDate.now());
-        c.setAuthorized(true);
-
-        c.setCityId(request.getCityId());
-        c.setDomainId(request.getDomainId());
-        c.setFederationId(request.getFederationId());
-
-        return repository.save(c);
+        Collectivity collectivity = new Collectivity();
+        collectivity.setName(request.getName());
+        collectivity.setNumber(request.getNumber());
+        collectivity.setLocation(request.getLocation());
+        collectivity.setCreationDate(LocalDate.now());
+        return repository.save(collectivity);
     }
 
     public Collectivity updateInformations(String id, CollectivityInformation request) {
-
-        int collectivityId = Integer.parseInt(id);
-
-        Collectivity c = repository.findById(collectivityId);
-
-        if (c == null) {
+        Collectivity existing = repository.findById(id);
+        if (existing == null) {
             throw new RuntimeException("Collectivity not found");
         }
 
-        c.setName(request.getName());
-        c.setNumber(request.getNumber());
-
-        return repository.updateInformations(c);
+        existing.setName(request.getName());
+        existing.setNumber(request.getNumber());
+        return repository.save(existing);
     }
 }

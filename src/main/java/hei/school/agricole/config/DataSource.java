@@ -12,8 +12,10 @@ public class DataSource {
     private static final String USER = "postgres";
     private static final String PASSWORD = "postgres";
 
+    private DataSource() {
+    }
+
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWORD);
-
     }
 }

@@ -5,54 +5,37 @@ import hei.school.agricole.entity.MembershipFee;
 import hei.school.agricole.repository.CollectivityRepository;
 import hei.school.agricole.repository.MembershipFeeRepository;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
 public class MembershipFeeService {
-
-    private final MembershipFeeRepository repository;
+    private final MembershipFeeRepository feeRepository;
     private final CollectivityRepository collectivityRepository;
 
-    public MembershipFeeService(MembershipFeeRepository repository,
-                                CollectivityRepository collectivityRepository) {
-        this.repository = repository;
+    public MembershipFeeService(MembershipFeeRepository feeRepository, CollectivityRepository collectivityRepository) {
+        this.feeRepository = feeRepository;
         this.collectivityRepository = collectivityRepository;
     }
 
-    public List<MembershipFee> getByCollectivity(String id) {
-
-        if (collectivityRepository.findById(Integer.parseInt(id)) == null) {
+    public List<MembershipFee> getByCollectivity(String collectivityId) {
+        if (!collectivityRepository.existsById(collectivityId)) {
             throw new RuntimeException("Collectivity not found");
         }
-
-        return repository.findByCollectivityId(id);
+        return feeRepository.findByCollectivityId(collectivityId);
     }
 
-    public List<MembershipFee> create(String id, List<CreateMembershipFee> fees) {
-
-        if (collectivityRepository.findById(Integer.parseInt(id)) == null) {
+    public List<MembershipFee> create(String collectivityId, List<CreateMembershipFee> fees) {
+        if (!collectivityRepository.existsById(collectivityId)) {
             throw new RuntimeException("Collectivity not found");
         }
-
-        for (CreateMembershipFee f : fees) {
-
-            if (f.getAmount() == null || f.getAmount() <= 0) {
+        for (CreateMembershipFee fee : fees) {
+            if (fee.getAmount() == null || fee.getAmount() <= 0) {
                 throw new RuntimeException("Amount must be > 0");
             }
-
-            if (f.getFrequency() == null) {
+            if (fee.getFrequency() == null) {
                 throw new RuntimeException("Invalid frequency");
             }
         }
-
-        return repository.saveAll(id, fees);
-    }
-
-    private boolean isValidFrequency(String f) {
-        return f.equals("WEEKLY")
-                || f.equals("MONTHLY")
-                || f.equals("ANNUALLY")
-                || f.equals("PUNCTUALLY");
+        return feeRepository.saveAll(collectivityId, fees);
     }
 }
