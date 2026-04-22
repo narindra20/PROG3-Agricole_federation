@@ -1,55 +1,97 @@
 package hei.school.agricole.entity;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public class Collectivity {
 
-    private int id;
-    private int number;
+    private Integer id;
+    private String number;
     private String name;
+    private String location;
     private LocalDate creationDate;
     private Integer cityId;
     private Integer domainId;
     private Integer federationId;
     private Integer sectorId;
-
     private boolean authorized;
 
-    private String location;
+    public Integer getId() {
+        return id;
+    }
 
-    private List<Integer> memberIds;
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public String getNumber() {
+        return number;
+    }
 
-    public int getNumber() { return number; }
-    public void setNumber(int number) { this.number = number; }
+    public void setNumber(String number) {
+        this.number = number;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getName() {
+        return name;
+    }
 
-    public LocalDate getCreationDate() { return creationDate; }
-    public void setCreationDate(LocalDate creationDate) { this.creationDate = creationDate; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public Integer getCityId() { return cityId; }
-    public void setCityId(Integer cityId) { this.cityId = cityId; }
+    public String getLocation() {
+        return location;
+    }
 
-    public Integer getDomainId() { return domainId; }
-    public void setDomainId(Integer domainId) { this.domainId = domainId; }
+    public void setLocation(String location) {
+        this.location = location;
+    }
 
-    public Integer getFederationId() { return federationId; }
-    public void setFederationId(Integer federationId) { this.federationId = federationId; }
+    public LocalDate getCreationDate() {
+        return creationDate;
+    }
 
-    public Integer getSectorId() { return sectorId; }
-    public void setSectorId(Integer sectorId) { this.sectorId = sectorId; }
+    public void setCreationDate(LocalDate creationDate) {
+        this.creationDate = creationDate;
+    }
 
-    public boolean isAuthorized() { return authorized; }
-    public void setAuthorized(boolean authorized) { this.authorized = authorized; }
+    public Integer getCityId() {
+        return cityId;
+    }
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    public void setCityId(Integer cityId) {
+        this.cityId = cityId;
+    }
 
-    public List<Integer> getMemberIds() { return memberIds; }
-    public void setMemberIds(List<Integer> memberIds) { this.memberIds = memberIds; }
+    public Integer getDomainId() {
+        return domainId;
+    }
+
+    public void setDomainId(Integer domainId) {
+        this.domainId = domainId;
+    }
+
+    public Integer getFederationId() {
+        return federationId;
+    }
+
+    public void setFederationId(Integer federationId) {
+        this.federationId = federationId;
+    }
+
+    public Integer getSectorId() {
+        return sectorId;
+    }
+
+    public void setSectorId(Integer sectorId) {
+        this.sectorId = sectorId;
+    }
+
+    public boolean isAuthorized() {
+        return authorized;
+    }
+
+    public void setAuthorized(boolean authorized) {
+        this.authorized = authorized;
+    }
 }
