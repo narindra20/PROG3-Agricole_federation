@@ -1,5 +1,7 @@
 package hei.school.agricole.dto;
 
+import hei.school.agricole.entity.CollectivityStructure;
+
 import java.util.List;
 
 public class CreateCollectivity {
@@ -7,7 +9,7 @@ public class CreateCollectivity {
     private String location;
     private List<String> members;
     private boolean federationApproval;
-    private CreateCollectivityStructure structure;
+    private CollectivityStructure structure;
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
@@ -18,6 +20,6 @@ public class CreateCollectivity {
     public boolean isFederationApproval() { return federationApproval; }
     public void setFederationApproval(boolean federationApproval) { this.federationApproval = federationApproval; }
 
-    public CreateCollectivityStructure getStructure() { return structure; }
-    public void setStructure(CreateCollectivityStructure structure) { this.structure = structure; }
+    public CollectivityStructure getStructure() { return structure; }
+    public void setStructure(CollectivityStructure structure) { this.structure = structure; }
 }

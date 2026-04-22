@@ -6,58 +6,50 @@ import java.util.List;
 public class Collectivity {
 
     private int id;
-    private String location;
+    private int number;
+    private String name;
     private LocalDate creationDate;
+    private Integer cityId;
+    private Integer domainId;
+    private Integer federationId;
+    private Integer sectorId;
+
     private boolean authorized;
 
-    private List<Member> members;
-    private CollectivityStructure structure;
+    private String location;
 
-    public int getId() {
-        return id;
-    }
+    private List<Integer> memberIds;
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public String getLocation() {
-        return location;
-    }
+    public int getNumber() { return number; }
+    public void setNumber(int number) { this.number = number; }
 
-    public void setLocation(String location) {
-        this.location = location;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public LocalDate getCreationDate() {
-        return creationDate;
-    }
+    public LocalDate getCreationDate() { return creationDate; }
+    public void setCreationDate(LocalDate creationDate) { this.creationDate = creationDate; }
 
-    public void setCreationDate(LocalDate creationDate) {
-        this.creationDate = creationDate;
-    }
+    public Integer getCityId() { return cityId; }
+    public void setCityId(Integer cityId) { this.cityId = cityId; }
 
-    public boolean isAuthorized() {
-        return authorized;
-    }
+    public Integer getDomainId() { return domainId; }
+    public void setDomainId(Integer domainId) { this.domainId = domainId; }
 
-    public void setAuthorized(boolean authorized) {
-        this.authorized = authorized;
-    }
+    public Integer getFederationId() { return federationId; }
+    public void setFederationId(Integer federationId) { this.federationId = federationId; }
 
-    public List<Member> getMembers() {
-        return members;
-    }
+    public Integer getSectorId() { return sectorId; }
+    public void setSectorId(Integer sectorId) { this.sectorId = sectorId; }
 
-    public void setMembers(List<Member> members) {
-        this.members = members;
-    }
+    public boolean isAuthorized() { return authorized; }
+    public void setAuthorized(boolean authorized) { this.authorized = authorized; }
 
-    public CollectivityStructure getStructure() {
-        return structure;
-    }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 
-    public void setStructure(CollectivityStructure structure) {
-        this.structure = structure;
-    }
+    public List<Integer> getMemberIds() { return memberIds; }
+    public void setMemberIds(List<Integer> memberIds) { this.memberIds = memberIds; }
 }
