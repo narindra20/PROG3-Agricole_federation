@@ -4,17 +4,18 @@ info:
   description: |
     # Versioning
     This API uses semantic versioning (MAJOR.MINOR.PATCH). Available versions are : 
-    - v0.0.1 (2026-04-21) : POST /collectivities for collectivities creation and POST /members for members creation.
-  version: 0.0.1
+    - v0.0.1 (2026-04-21) : POST /collectivities and POST /members
+    - v0.0.2 (2026-04-22) : Add identity assignment to collectivities (J)
+  version: 0.0.2
+
 servers:
   - url: 'https://localhost:8080'
+
 paths:
-  '/collectivities':
+
+  /collectivities:
     post:
       summary: Create list of collectivities
-      description: |
-        During collectivity request body creation, only members ID are provided to identify members. 
-        But the response content includes members information, not only their IDs.
       requestBody:
         content:
           application/json:
@@ -32,10 +33,43 @@ paths:
                 items:
                   $ref: '#/components/schemas/Collectivity'
         400:
-          description: Collectivity without federation approval or structure missing.
+          description: Collectivity without federation approval or structure missing
         404:
-          description: Member not found.
-  '/members':
+          description: Member not found
+
+  /collectivities/{id}/identity:
+    put:
+      summary: Assign number and name to a collectivity
+      description: |
+        Assign a unique number and name to a collectivity.
+        Once assigned, the identity cannot be modified.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectivityIdentity'
+      responses:
+        200:
+          description: Identity successfully assigned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collectivity'
+        400:
+          description: Identity already assigned
+        404:
+          description: Collectivity not found
+        409:
+          description: Number or name already exists
+
+  /members:
     post:
       summary: Create list of members
       requestBody:
@@ -56,13 +90,14 @@ paths:
                   $ref: '#/components/schemas/Member'
         400:
           description: |
-            The following case must return a bad request exception : 
-            - Member with bad referees or without proper payment.
-            - Membership dues not paid or registration fee not paid.
+            - Invalid referees (B-2 rules not respected)
+            - Fees not paid
         404:
-          description: Either collectivity or member not found.
+          description: Collectivity or member not found
+
 components:
   schemas:
+
     CreateCollectivity:
       type: object
       properties:
@@ -71,12 +106,12 @@ components:
         members:
           type: array
           items:
-            schema:
-              $ref: '#/components/schemas/MemberIdentifier'
+            $ref: '#/components/schemas/MemberIdentifier'
         federationApproval:
           type: boolean
         structure:
           $ref: '#/components/schemas/CreateCollectivityStructure'
+
     CreateCollectivityStructure:
       type: object
       properties:
@@ -88,6 +123,7 @@ components:
           $ref: '#/components/schemas/MemberIdentifier'
         secretary:
           $ref: '#/components/schemas/MemberIdentifier'
+
     CollectivityStructure:
       type: object
       properties:
@@ -99,10 +135,15 @@ components:
           $ref: '#/components/schemas/Member'
         secretary:
           $ref: '#/components/schemas/Member'
+
     Collectivity:
       type: object
       properties:
         id:
+          type: string
+        number:
+          type: string
+        name:
           type: string
         location:
           type: string
@@ -112,8 +153,21 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Member'
+
+    CollectivityIdentity:
+      type: object
+      required:
+        - number
+        - name
+      properties:
+        number:
+          type: string
+        name:
+          type: string
+
     MemberIdentifier:
       type: string
+
     CreateMember:
       type: object
       allOf:
@@ -129,6 +183,7 @@ components:
           type: boolean
         membershipDuesPaid:
           type: boolean
+
     MemberInformation:
       type: object
       properties:
@@ -146,11 +201,12 @@ components:
         profession:
           type: string
         phoneNumber:
-          type: int
+          type: integer
         email:
           type: string
         occupation:
           $ref: '#/components/schemas/MemberOccupation'
+
     Member:
       type: object
       allOf:
@@ -162,11 +218,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Member'
+
     Gender:
       type: string
       enum:
         - MALE
         - FEMALE
+
     MemberOccupation:
       type: string
       enum:

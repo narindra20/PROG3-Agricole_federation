@@ -6,15 +6,13 @@ import java.util.List;
 public class Collectivity {
 
     private int id;
-    private int number;
+    private Integer number;
     private String name;
     private LocalDate creationDate;
-
     private Integer cityId;
     private Integer domainId;
     private Integer federationId;
     private Integer sectorId;
-
     private boolean authorized;
 
     private List<Integer> memberIds;
@@ -22,8 +20,8 @@ public class Collectivity {
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
-    public int getNumber() { return number; }
-    public void setNumber(int number) { this.number = number; }
+    public Integer getNumber() { return number; }
+    public void setNumber(Integer number) { this.number = number; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
