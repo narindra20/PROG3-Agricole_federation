@@ -1,7 +1,7 @@
 package hei.school.agricole.controller;
 
 import hei.school.agricole.dto.CreateCollectivity;
-import hei.school.agricole.dto.AssignIdentityRequest;
+import hei.school.agricole.dto.CollectivityInformation;
 import hei.school.agricole.entity.Collectivity;
 import hei.school.agricole.service.CollectivityService;
 import org.springframework.web.bind.annotation.*;
@@ -24,17 +24,16 @@ public class CollectivityController {
     }
 
     @PostMapping
-    public List<Collectivity> create(@RequestBody List<CreateCollectivity> requests) {
-        return requests.stream()
-                .map(service::create)
-                .toList();
+    public Collectivity create(@RequestBody CreateCollectivity request) {
+        return service.create(request);
     }
 
-    @PutMapping("/{id}/identity")
-    public Collectivity assignIdentity(
+    @PutMapping("/{id}/informations")
+    public Collectivity updateInformations(
             @PathVariable String id,
-            @RequestBody AssignIdentityRequest request
+            @RequestBody CollectivityInformation request
     ) {
-        return service.assignIdentity(id, request);
+        return service.updateInformations(id, request);
     }
+
 }

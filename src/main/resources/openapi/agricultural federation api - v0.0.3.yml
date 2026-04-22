@@ -187,7 +187,7 @@ paths:
         content:
           application/json:
             schema:
-              type: array
+              type: arrayè
               items:
                 $ref: '#/components/schemas/CreateMemberPayment'
       responses:

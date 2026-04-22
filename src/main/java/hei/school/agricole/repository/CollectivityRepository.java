@@ -13,20 +13,16 @@ public class CollectivityRepository {
 
     private final Connection connection;
 
-    public CollectivityRepository() {
-        try {
-            this.connection = new DataSource().getConnection();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    public CollectivityRepository() throws SQLException {
+        this.connection = new DataSource().getConnection();
     }
 
     public Collectivity save(Collectivity c) {
 
         String sql = """
             INSERT INTO collectivity
-            (location, creation_date, city_id, domain_id, federation_id, sector_id, is_authorized)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            (location, creation_date, city_id, domain_id, federation_id, is_authorized)
+            VALUES (?, ?, ?, ?, ?, ?)
             RETURNING id
         """;
 
@@ -34,20 +30,17 @@ public class CollectivityRepository {
 
             ps.setString(1, c.getLocation());
             ps.setDate(2, Date.valueOf(c.getCreationDate()));
+
             ps.setInt(3, c.getCityId());
             ps.setInt(4, c.getDomainId());
 
-            if (c.getFederationId() != null)
+            if (c.getFederationId() != null) {
                 ps.setInt(5, c.getFederationId());
-            else
+            } else {
                 ps.setNull(5, Types.INTEGER);
+            }
 
-            if (c.getSectorId() != null)
-                ps.setInt(6, c.getSectorId());
-            else
-                ps.setNull(6, Types.INTEGER);
-
-            ps.setBoolean(7, c.isAuthorized());
+            ps.setBoolean(6, c.isAuthorized());
 
             ResultSet rs = ps.executeQuery();
 
@@ -57,42 +50,18 @@ public class CollectivityRepository {
 
             return c;
 
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public boolean existsByNumberOrName(String number, String name) {
+    public Collectivity findById(int id) {
 
-        String sql = "SELECT 1 FROM collectivity WHERE number = ? OR name = ?";
-
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-
-            ps.setString(1, number);
-            ps.setString(2, name);
-
-            ResultSet rs = ps.executeQuery();
-            return rs.next();
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public Collectivity updateIdentity(String id, String number, String name) {
-
-        String sql = """
-            UPDATE collectivity
-            SET number = ?, name = ?
-            WHERE id = ?
-            RETURNING *
-        """;
+        String sql = "SELECT * FROM collectivity WHERE id = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
-            ps.setString(1, number);
-            ps.setString(2, name);
-            ps.setInt(3, Integer.parseInt(id));
+            ps.setInt(1, id);
 
             ResultSet rs = ps.executeQuery();
 
@@ -100,14 +69,18 @@ public class CollectivityRepository {
                 Collectivity c = new Collectivity();
 
                 c.setId(rs.getInt("id"));
-                c.setNumber(rs.getString("number"));
-                c.setName(rs.getString("name"));
                 c.setLocation(rs.getString("location"));
-                c.setCreationDate(rs.getDate("creation_date").toLocalDate());
+                c.setName(rs.getString("name"));
+                c.setNumber(rs.getString("number"));
+
                 c.setCityId(rs.getInt("city_id"));
                 c.setDomainId(rs.getInt("domain_id"));
-                c.setFederationId(rs.getObject("federation_id", Integer.class));
-                c.setSectorId(rs.getObject("sector_id", Integer.class));
+
+                Object federationId = rs.getObject("federation_id");
+                if (federationId != null) {
+                    c.setFederationId(rs.getInt("federation_id"));
+                }
+
                 c.setAuthorized(rs.getBoolean("is_authorized"));
 
                 return c;
@@ -115,7 +88,30 @@ public class CollectivityRepository {
 
             return null;
 
-        } catch (Exception e) {
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Collectivity updateInformations(Collectivity c) {
+
+        String sql = """
+            UPDATE collectivity
+            SET name = ?, number = ?
+            WHERE id = ?
+        """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setString(1, c.getName());
+            ps.setString(2, c.getNumber());
+            ps.setInt(3, c.getId());
+
+            ps.executeUpdate();
+
+            return c;
+
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -126,27 +122,32 @@ public class CollectivityRepository {
 
         List<Collectivity> list = new ArrayList<>();
 
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
                 Collectivity c = new Collectivity();
 
                 c.setId(rs.getInt("id"));
-                c.setNumber(rs.getString("number"));
-                c.setName(rs.getString("name"));
                 c.setLocation(rs.getString("location"));
-                c.setCreationDate(rs.getDate("creation_date").toLocalDate());
+                c.setName(rs.getString("name"));
+                c.setNumber(rs.getString("number"));
+
                 c.setCityId(rs.getInt("city_id"));
                 c.setDomainId(rs.getInt("domain_id"));
-                c.setFederationId(rs.getObject("federation_id", Integer.class));
-                c.setSectorId(rs.getObject("sector_id", Integer.class));
+
+                Object federationId = rs.getObject("federation_id");
+                if (federationId != null) {
+                    c.setFederationId(rs.getInt("federation_id"));
+                }
+
                 c.setAuthorized(rs.getBoolean("is_authorized"));
 
                 list.add(c);
             }
 
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 

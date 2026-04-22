@@ -1,25 +1,71 @@
 package hei.school.agricole.dto;
 
-import hei.school.agricole.entity.CollectivityStructure;
-
-import java.util.List;
-
 public class CreateCollectivity {
 
     private String location;
-    private List<String> members;
-    private boolean federationApproval;
-    private CollectivityStructure structure;
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    private Integer cityId;
+    private Integer domainId;
+    private Integer federationId;
+    private Integer sectorId;
 
-    public List<String> getMembers() { return members; }
-    public void setMembers(List<String> members) { this.members = members; }
+    private Boolean federationApproval;
 
-    public boolean isFederationApproval() { return federationApproval; }
-    public void setFederationApproval(boolean federationApproval) { this.federationApproval = federationApproval; }
+    private CreateCollectivityStructure structure;
 
-    public CollectivityStructure getStructure() { return structure; }
-    public void setStructure(CollectivityStructure structure) { this.structure = structure; }
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public Integer getCityId() {
+        return cityId;
+    }
+
+    public void setCityId(Integer cityId) {
+        this.cityId = cityId;
+    }
+
+    public Integer getDomainId() {
+        return domainId;
+    }
+
+    public void setDomainId(Integer domainId) {
+        this.domainId = domainId;
+    }
+
+    public Integer getFederationId() {
+        return federationId;
+    }
+
+    public void setFederationId(Integer federationId) {
+        this.federationId = federationId;
+    }
+
+    public Integer getSectorId() {
+        return sectorId;
+    }
+
+    public void setSectorId(Integer sectorId) {
+        this.sectorId = sectorId;
+    }
+
+    public Boolean getFederationApproval() {
+        return federationApproval;
+    }
+
+    public void setFederationApproval(Boolean federationApproval) {
+        this.federationApproval = federationApproval;
+    }
+
+    public CreateCollectivityStructure getStructure() {
+        return structure;
+    }
+
+    public void setStructure(CreateCollectivityStructure structure) {
+        this.structure = structure;
+    }
 }

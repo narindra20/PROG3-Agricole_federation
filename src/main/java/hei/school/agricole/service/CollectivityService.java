@@ -1,7 +1,7 @@
 package hei.school.agricole.service;
 
-import hei.school.agricole.dto.AssignIdentityRequest;
 import hei.school.agricole.dto.CreateCollectivity;
+import hei.school.agricole.dto.CollectivityInformation;
 import hei.school.agricole.entity.Collectivity;
 import hei.school.agricole.repository.CollectivityRepository;
 import org.springframework.stereotype.Service;
@@ -18,83 +18,41 @@ public class CollectivityService {
         this.repository = repository;
     }
 
-    public Collectivity create(CreateCollectivity dto) {
-
-        validate(dto);
-
-        Collectivity c = new Collectivity();
-
-        c.setLocation(dto.getLocation());
-        c.setCreationDate(LocalDate.now());
-        c.setCityId(mapLocation(dto.getLocation()));
-        c.setDomainId(1);
-
-        c.setFederationId(dto.isFederationApproval() ? 1 : null);
-        c.setSectorId(null);
-        c.setAuthorized(dto.isFederationApproval());
-
-        c.setNumber(null);
-        c.setName(null);
-
-        return repository.save(c);
-    }
-
-    public Collectivity assignIdentity(String id, AssignIdentityRequest request) {
-
-        if (request == null) {
-            throw new RuntimeException("Identity request cannot be null");
-        }
-
-        if (request.getNumber() == null || request.getNumber().isBlank()) {
-            throw new RuntimeException("number required");
-        }
-
-        if (request.getName() == null || request.getName().isBlank()) {
-            throw new RuntimeException("name required");
-        }
-
-        if (repository.existsByNumberOrName(request.getNumber(), request.getName())) {
-            throw new RuntimeException("Number or name already exists");
-        }
-
-        Collectivity updated = repository.updateIdentity(
-                id,
-                request.getNumber(),
-                request.getName()
-        );
-
-        if (updated == null) {
-            throw new RuntimeException("Collectivity not found");
-        }
-
-        return updated;
-    }
-
     public List<Collectivity> findAll() {
         return repository.findAll();
     }
 
-    private void validate(CreateCollectivity dto) {
+    public Collectivity create(CreateCollectivity request) {
 
-        if (dto == null) {
-            throw new RuntimeException("DTO cannot be null");
-        }
-
-        if (dto.getLocation() == null || dto.getLocation().isBlank()) {
-            throw new RuntimeException("location required");
-        }
-
-        if (!dto.isFederationApproval()) {
+        if (!Boolean.TRUE.equals(request.getFederationApproval())) {
             throw new RuntimeException("Federation approval required");
         }
+
+        Collectivity c = new Collectivity();
+        c.setLocation(request.getLocation());
+        c.setCreationDate(LocalDate.now());
+        c.setAuthorized(true);
+
+        c.setCityId(request.getCityId());
+        c.setDomainId(request.getDomainId());
+        c.setFederationId(request.getFederationId());
+
+        return repository.save(c);
     }
 
-    private int mapLocation(String location) {
-        return switch (location.toLowerCase()) {
-            case "antananarivo" -> 1;
-            case "toamasina" -> 2;
-            case "fianarantsoa" -> 3;
-            default -> 1;
-        };
+    public Collectivity updateInformations(String id, CollectivityInformation request) {
+
+        int collectivityId = Integer.parseInt(id);
+
+        Collectivity c = repository.findById(collectivityId);
+
+        if (c == null) {
+            throw new RuntimeException("Collectivity not found");
+        }
+
+        c.setName(request.getName());
+        c.setNumber(request.getNumber());
+
+        return repository.updateInformations(c);
     }
 }

@@ -69,6 +69,55 @@ CREATE TABLE member (
     occupation member_occupation
 );
 
+--AJOUT DES AUTRES TABLES, nouvelles fonctionnalités C et D
+CREATE TYPE frequency_enum AS ENUM (
+    'WEEKLY',
+    'MONTHLY',
+    'ANNUALLY',
+    'PUNCTUALLY'
+);
+
+CREATE TYPE activity_status_enum AS ENUM (
+    'ACTIVE',
+    'INACTIVE'
+);
+
+CREATE TABLE membership_fee (
+    id SERIAL PRIMARY KEY,
+    collectivity_id INT NOT NULL REFERENCES collectivity(id),
+    eligible_from DATE NOT NULL,
+    frequency frequency_enum NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
+    label VARCHAR(150),
+    status activity_status_enum DEFAULT 'ACTIVE'
+);
+
+CREATE TYPE payment_mode_enum AS ENUM (
+    'CASH',
+    'MOBILE_BANKING',
+    'BANK_TRANSFER'
+);
+
+CREATE TABLE member_payment (
+    id SERIAL PRIMARY KEY,
+    member_id INT NOT NULL REFERENCES member(id),
+    membership_fee_id INT REFERENCES membership_fee(id),
+    account_id INT REFERENCES account(id),
+    amount INT NOT NULL,
+    payment_mode payment_mode_enum,
+    creation_date DATE DEFAULT CURRENT_DATE
+);
+
+CREATE TABLE collectivity_transaction (
+    id SERIAL PRIMARY KEY,
+    collectivity_id INT NOT NULL REFERENCES collectivity(id),
+    member_id INT REFERENCES member(id),
+    account_id INT REFERENCES account(id),
+    amount DECIMAL(15,2) NOT NULL,
+    payment_mode payment_mode_enum,
+    creation_date DATE DEFAULT CURRENT_DATE
+);
+
 -- =========================
 -- PARENTING / REFERRAL
 -- =========================
