@@ -1,6 +1,5 @@
 package hei.school.agricole.controller;
 
-import hei.school.agricole.dto.AssignIdentityRequest;
 import hei.school.agricole.dto.CreateCollectivity;
 import hei.school.agricole.entity.Collectivity;
 import hei.school.agricole.service.CollectivityService;
@@ -28,13 +27,5 @@ public class CollectivityController {
         return requests.stream()
                 .map(service::create)
                 .toList();
-    }
-
-    @PatchMapping("/{id}/identity")
-    public Collectivity assignIdentity(
-            @PathVariable int id,
-            @RequestBody AssignIdentityRequest request
-    ) {
-        return service.assignIdentity(id, request);
     }
 }
