@@ -1,4 +1,6 @@
-
+CREATE TYPE gender_enum AS ENUM ('MALE', 'FEMALE');
+CREATE TYPE profession_enum AS ENUM ('PRODUCTEUR', 'COLLECTEUR', 'AUTRE');
+CREATE TYPE occupation_enum AS ENUM ('JUNIOR','SENIOR','SECRETARY','TREASURER','VICE_PRESIDENT','PRESIDENT');
 
 CREATE TABLE city (
     id SERIAL PRIMARY KEY,
@@ -36,6 +38,20 @@ CREATE TABLE collectivity (
     is_authorized BOOLEAN DEFAULT FALSE
 );
 
+CREATE TABLE collectivity_member (
+    collectivity_id INT REFERENCES collectivity(id),
+    member_id INT REFERENCES member(id),
+    PRIMARY KEY (collectivity_id, member_id)
+);
+
+CREATE TABLE collectivity_structure (
+    collectivity_id INT PRIMARY KEY REFERENCES collectivity(id),
+    president_id INT REFERENCES member(id),
+    vice_president_id INT REFERENCES member(id),
+    treasurer_id INT REFERENCES member(id),
+    secretary_id INT REFERENCES member(id)
+);
+
 -- =========================
 -- MEMBER
 -- =========================
@@ -45,12 +61,12 @@ CREATE TABLE member (
     last_name VARCHAR(100),
     first_name VARCHAR(100),
     birth_date DATE,
-    gender VARCHAR(10),
+    gender gender_enum,
     address VARCHAR(255),
     phone VARCHAR(20) UNIQUE,
     email VARCHAR(100) UNIQUE,
     membership_date DATE,
-    profession VARCHAR(100)
+    occupation member_occupation
 );
 
 -- =========================
@@ -139,7 +155,7 @@ CREATE TABLE contribution (
 
 CREATE TABLE account (
     id SERIAL PRIMARY KEY,
-    type VARCHAR(30), -- CASH, BANK, MOBILE_MONEY
+    type VARCHAR(30),
     balance DECIMAL(15,2) DEFAULT 0,
     collectivity_id INT REFERENCES collectivity(id),
     federation_id INT REFERENCES federation(id)
