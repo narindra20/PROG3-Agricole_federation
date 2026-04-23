@@ -121,4 +121,20 @@ public class MemberRepository {
         if (membershipDate != null) member.setMembershipDate(membershipDate.toLocalDate());
         return member;
     }
+
+    public List<Member> findByCollectivityId(String collectivityId) {
+        String sql = "SELECT id, first_name, last_name, collectivity_id, phone, email, birth_date, gender, address, profession, occupation, membership_date FROM member WHERE collectivity_id = ?";
+        List<Member> members = new ArrayList<>();
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, Integer.parseInt(collectivityId));
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                members.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return members;
+    }
 }

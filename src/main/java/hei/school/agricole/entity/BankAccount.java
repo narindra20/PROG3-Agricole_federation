@@ -3,19 +3,13 @@ package hei.school.agricole.entity;
 import hei.school.agricole.enums.Bank;
 
 public class BankAccount extends FinancialAccount {
-    private String holderName;
     private Bank bankName;
     private Integer bankCode;
     private Integer bankBranchCode;
     private String bankAccountNumber;
+
     private Integer bankAccountKey;
 
-    public String getHolderName() {
-        return holderName;
-    }
-    public void setHolderName(String holderName) {
-        this.holderName = holderName;
-    }
     public Bank getBankName() {
         return bankName;
     }

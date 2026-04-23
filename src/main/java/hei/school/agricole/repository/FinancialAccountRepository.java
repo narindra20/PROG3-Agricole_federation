@@ -6,6 +6,9 @@ import hei.school.agricole.enums.Bank;
 import hei.school.agricole.enums.MobileBankingService;
 import org.springframework.stereotype.Repository;
 import java.sql.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Repository
 public class FinancialAccountRepository {
@@ -86,5 +89,37 @@ public class FinancialAccountRepository {
             return acc;
         }
         throw new IllegalStateException("Unknown account type: " + type);
+    }
+
+    public List<FinancialAccount> findByCollectivityId(String collectivityId) {
+        String sql = "SELECT * FROM financial_account WHERE collectivity_id = ?";
+        List<FinancialAccount> accounts = new ArrayList<>();
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, Integer.parseInt(collectivityId));
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                accounts.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return accounts;
+    }
+
+    public Double getBalanceAtDate(String accountId, LocalDate date) {
+        String sql = "SELECT COALESCE(SUM(amount), 0) FROM collectivity_transaction WHERE account_credited_id = ? AND creation_date <= ?";
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, Integer.parseInt(accountId));
+            ps.setDate(2, Date.valueOf(date));
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+            return 0.0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

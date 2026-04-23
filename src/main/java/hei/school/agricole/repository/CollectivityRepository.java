@@ -79,4 +79,41 @@ public class CollectivityRepository {
         c.setCreationDate(rs.getDate("creation_date").toLocalDate());
         return c;
     }
+
+    public boolean existsByName(String name) {
+        String sql = "SELECT 1 FROM collectivity WHERE name = ?";
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, name);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean existsByNumber(String number) {
+        String sql = "SELECT 1 FROM collectivity WHERE number = ?";
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, number);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void updateInformation(String id, String name, String number) {
+        String sql = "UPDATE collectivity SET name = ?, number = ? WHERE id = ?";
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, name);
+            ps.setString(2, number);
+            ps.setInt(3, Integer.parseInt(id));
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

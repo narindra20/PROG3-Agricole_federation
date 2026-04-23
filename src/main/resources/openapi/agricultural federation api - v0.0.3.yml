@@ -7,7 +7,7 @@ info:
     - v0.0.1 (2026-04-21) : POST /collectivities for collectivities creation and POST /members for members creation.
     - v0.0.2 (2026-04-22) : PUT /collectivities/{id}/informations for collectivity information update.
     - v0.0.3 (2026-04-23) : New features about membership fees, collectivities transactions and its financial accounts, and members payments.
-  version: 0.0.1
+  version: 0.0.3
 servers:
   - url: 'https://localhost:8080'
 paths:
@@ -146,6 +146,50 @@ paths:
           description: Provided query parameters occur some exceptions.
         404:
           description: Collectivity not found.
+  '/collectivities/{id}':
+    get:
+      summary: Get collectivity by id with its members
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: Collectivity with members
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectivityWithMembers'
+        404:
+          description: Collectivity not found.
+  '/collectivities/{id}/financialAccounts':
+    get:
+      summary: Get financial accounts of a collectivity with balance at a given date
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: at
+          schema:
+            type: string
+            format: date
+          required: true
+      responses:
+        200:
+          description: List of financial accounts with balance at the specified date
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FinancialAccountResponse'
+        404:
+          description: Collectivity not found.
   '/members':
     post:
       summary: Create list of members
@@ -187,7 +231,7 @@ paths:
         content:
           application/json:
             schema:
-              type: arrayè
+              type: array
               items:
                 $ref: '#/components/schemas/CreateMemberPayment'
       responses:
@@ -210,8 +254,7 @@ components:
         members:
           type: array
           items:
-            schema:
-              $ref: '#/components/schemas/MemberIdentifier'
+            $ref: '#/components/schemas/MemberIdentifier'
         federationApproval:
           type: boolean
         structure:
@@ -355,7 +398,6 @@ components:
         creationDate:
           type: string
           format: date
-
     FinancialAccount:
       oneOf:
         - $ref: '#/components/schemas/CashAccount'
@@ -387,8 +429,7 @@ components:
         id:
           type: string
         holderName:
-          type:
-            string
+          type: string
         bankName:
           $ref: '#/components/schemas/Bank'
         bankCode:
@@ -467,3 +508,39 @@ components:
         - CASH
         - MOBILE_BANKING
         - BANK_TRANSFER
+    CollectivityWithMembers:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        number:
+          type: string
+        location:
+          type: string
+        creationDate:
+          type: string
+          format: date
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/Member'
+    FinancialAccountResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [CASH, MOBILE, BANK]
+        balance:
+          type: number
+        holderName:
+          type: string
+        bankName:
+          type: string
+        mobileService:
+          type: string
+        accountNumber:
+          type: string
