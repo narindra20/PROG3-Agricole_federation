@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS collectivity (
+CREATE TABLE collectivity (
     id SERIAL PRIMARY KEY,
     number VARCHAR(50),
     name VARCHAR(255),
@@ -7,11 +7,11 @@ CREATE TABLE IF NOT EXISTS collectivity (
     specialization VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS member (
-    id VARCHAR(50) PRIMARY KEY,
+CREATE TABLE member (
+    id SERIAL PRIMARY KEY,
     first_name VARCHAR(255),
     last_name VARCHAR(255),
-    collectivity_id VARCHAR(50),
+    collectivity_id INTEGER,
     birth_date DATE,
     gender VARCHAR(10),
     address TEXT,
@@ -22,9 +22,9 @@ CREATE TABLE IF NOT EXISTS member (
     membership_date DATE
 );
 
-CREATE TABLE IF NOT EXISTS membership_fee (
-    id VARCHAR(50) PRIMARY KEY,
-    collectivity_id VARCHAR(50),
+CREATE TABLE membership_fee (
+    id SERIAL PRIMARY KEY,
+    collectivity_id INTEGER,
     eligible_from DATE,
     frequency VARCHAR(20),
     amount DOUBLE PRECISION,
@@ -32,9 +32,9 @@ CREATE TABLE IF NOT EXISTS membership_fee (
     status VARCHAR(20)
 );
 
-CREATE TABLE IF NOT EXISTS financial_account (
-    id VARCHAR(50) PRIMARY KEY,
-    collectivity_id VARCHAR(50),
+CREATE TABLE financial_account (
+    id SERIAL PRIMARY KEY,
+    collectivity_id INTEGER,
     type VARCHAR(10),
     amount DOUBLE PRECISION DEFAULT 0,
     holder_name VARCHAR(255),
@@ -47,21 +47,21 @@ CREATE TABLE IF NOT EXISTS financial_account (
     rib_key INT
 );
 
-CREATE TABLE IF NOT EXISTS member_payment (
-    id VARCHAR(50) PRIMARY KEY,
-    member_id VARCHAR(50),
+CREATE TABLE member_payment (
+    id SERIAL PRIMARY KEY,
+    member_id INTEGER,
     amount INT,
     payment_mode VARCHAR(20),
-    membership_fee_id VARCHAR(50),
+    membership_fee_id INTEGER,
     creation_date DATE
 );
 
-CREATE TABLE IF NOT EXISTS collectivity_transaction (
-    id VARCHAR(50) PRIMARY KEY,
-    collectivity_id VARCHAR(50),
+CREATE TABLE collectivity_transaction (
+    id SERIAL PRIMARY KEY,
+    collectivity_id INTEGER,
     creation_date DATE,
     amount DOUBLE PRECISION,
     payment_mode VARCHAR(20),
-    account_credited_id VARCHAR(50),
-    member_debited_id VARCHAR(50)
+    account_credited_id INTEGER,
+    member_debited_id INTEGER
 );
