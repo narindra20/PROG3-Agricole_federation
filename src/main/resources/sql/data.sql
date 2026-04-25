@@ -80,3 +80,23 @@ INSERT INTO collectivity_transaction (id, collectivity_id, creation_date, amount
 UPDATE financial_account SET amount = (
     SELECT COALESCE(SUM(amount), 0) FROM collectivity_transaction WHERE account_credited_id = financial_account.id
 );
+
+INSERT INTO collectivity (id, number, name, location, creation_date, specialization) VALUES
+(1, 'col-1', 'Mpanorina', 'Ambatondrazaka', '2026-01-01', 'Riziculture'),
+(2, 'col-2', 'Ambatondrazaka', 'Brickaville', '2026-01-01', 'Pisciculture'),
+(3, 'col-3', 'Dobo voalohany', 'Ambatondrazaka', '2026-01-01', 'Apiculture')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO member (id, first_name, last_name, collectivity_id, phone, email, birth_date, gender, address, profession, occupation, membership_date) VALUES
+(1, 'Nom', 'Membre1', 1, '0341234567', 'm1@example.com', '1980-01-01', 'MALE', 'Adresse1', 'Agriculteur', 'PRESIDENT', '2025-08-01'),
+(2, 'Nom', 'Membre2', 1, '0341234568', 'm2@example.com', '1982-01-01', 'MALE', 'Adresse2', 'Agriculteur', 'VICE_PRESIDENT', '2025-08-01'),
+(3, 'Nom', 'Membre3', 1, '0341234569', 'm3@example.com', '1990-01-01', 'MALE', 'Adresse3', 'Agriculteur', 'SENIOR', '2026-01-01')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO membership_fee (id, collectivity_id, eligible_from, frequency, amount, label, status) VALUES
+(1, 1, '2026-01-01', 'ANNUALLY', 100000, 'Cotisation annuelle', 'ACTIVE')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO financial_account (id, collectivity_id, type, amount, holder_name) VALUES
+(1, 1, 'CASH', 0, 'Caisse collective')
+ON CONFLICT (id) DO NOTHING;
