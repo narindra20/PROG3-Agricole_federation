@@ -1,6 +1,8 @@
 package hei.school.agricole.repository;
 
 import hei.school.agricole.config.DataSource;
+import hei.school.agricole.dto.CollectivityLocalStatistics;
+import hei.school.agricole.dto.MemberDescription;
 import hei.school.agricole.entity.Member;
 import hei.school.agricole.enums.Gender;
 import hei.school.agricole.enums.MemberOccupation;
@@ -133,6 +135,90 @@ public class MemberRepository {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return rs.getInt(1);
             return 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<CollectivityLocalStatistics> getLocalStatistics(String collectivityId, LocalDate from, LocalDate to) {
+        String sql = """
+            WITH active_fees AS (
+                SELECT SUM(amount) AS total_due
+                FROM membership_fee
+                WHERE collectivity_id = ? AND status = 'ACTIVE' AND eligible_from <= ?
+            ),
+            mandatory_activities AS (
+                SELECT COUNT(*) AS total_mandatory
+                FROM activity
+                WHERE collectivity_id = ? AND activity_type IN ('MEETING', 'TRAINING')
+                  AND executive_date BETWEEN ? AND ?
+            ),
+            member_payments AS (
+                SELECT mp.member_id, COALESCE(SUM(mp.amount), 0) AS total_paid
+                FROM member_payment mp
+                WHERE mp.creation_date BETWEEN ? AND ?
+                GROUP BY mp.member_id
+            ),
+            member_attendance AS (
+                SELECT att.member_id,
+                       COUNT(CASE WHEN att.attendance_status = 'ATTENDED' THEN 1 END) AS attended_count
+                FROM attendance att
+                JOIN activity a ON att.activity_id = a.id
+                WHERE a.collectivity_id = ? AND a.executive_date BETWEEN ? AND ?
+                  AND a.activity_type IN ('MEETING', 'TRAINING')
+                GROUP BY att.member_id
+            )
+            SELECT m.id,
+                   m.first_name,
+                   m.last_name,
+                   m.email,
+                   m.occupation,
+                   COALESCE(mp.total_paid, 0) AS earned_amount,
+                   GREATEST(COALESCE(af.total_due, 0) - COALESCE(mp.total_paid, 0), 0) AS unpaid_amount,
+                   CASE
+                       WHEN ma.total_mandatory = 0 THEN 100.0
+                       ELSE COALESCE(matt.attended_count, 0) * 100.0 / ma.total_mandatory
+                   END AS assiduity_percentage
+            FROM member m
+            CROSS JOIN (SELECT COALESCE(MAX(total_due), 0) AS total_due FROM active_fees) af
+            CROSS JOIN (SELECT COALESCE(MAX(total_mandatory), 0) AS total_mandatory FROM mandatory_activities) ma
+            LEFT JOIN member_payments mp ON mp.member_id = m.id
+            LEFT JOIN member_attendance matt ON matt.member_id = m.id
+            WHERE m.collectivity_id = ?
+            ORDER BY m.id
+        """;
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int idx = 1;
+            ps.setInt(idx++, Integer.parseInt(collectivityId));
+            ps.setDate(idx++, Date.valueOf(to));
+            ps.setInt(idx++, Integer.parseInt(collectivityId));
+            ps.setDate(idx++, Date.valueOf(from));
+            ps.setDate(idx++, Date.valueOf(to));
+            ps.setDate(idx++, Date.valueOf(from));
+            ps.setDate(idx++, Date.valueOf(to));
+            ps.setInt(idx++, Integer.parseInt(collectivityId));
+            ps.setDate(idx++, Date.valueOf(from));
+            ps.setDate(idx++, Date.valueOf(to));
+            ps.setInt(idx, Integer.parseInt(collectivityId));
+
+            ResultSet rs = ps.executeQuery();
+            List<CollectivityLocalStatistics> list = new ArrayList<>();
+            while (rs.next()) {
+                CollectivityLocalStatistics stat = new CollectivityLocalStatistics();
+                MemberDescription desc = new MemberDescription();
+                desc.setId(String.valueOf(rs.getInt("id")));
+                desc.setFirstName(rs.getString("first_name"));
+                desc.setLastName(rs.getString("last_name"));
+                desc.setEmail(rs.getString("email"));
+                desc.setOccupation(rs.getString("occupation"));
+                stat.setMemberDescription(desc);
+                stat.setEarnedAmount(rs.getDouble("earned_amount"));
+                stat.setUnpaidAmount(rs.getDouble("unpaid_amount"));
+                stat.setAssiduityPercentage(rs.getDouble("assiduity_percentage"));
+                list.add(stat);
+            }
+            return list;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
