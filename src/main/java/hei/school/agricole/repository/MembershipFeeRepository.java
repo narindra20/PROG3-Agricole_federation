@@ -15,7 +15,7 @@ import java.util.List;
 public class MembershipFeeRepository {
 
     public List<MembershipFee> findByCollectivityId(String collectivityId) {
-        String sql = "SELECT * FROM membership_fee WHERE collectivity_id = ?";
+        String sql = "SELECT id, eligible_from, frequency, amount, label, status FROM membership_fee WHERE collectivity_id = ?";
         List<MembershipFee> list = new ArrayList<>();
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -38,7 +38,7 @@ public class MembershipFeeRepository {
     }
 
     public MembershipFee findById(String id) {
-        String sql = "SELECT * FROM membership_fee WHERE id = ?";
+        String sql = "SELECT id, eligible_from, frequency, amount, label, status FROM membership_fee WHERE id = ?";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, Integer.parseInt(id));
@@ -88,5 +88,28 @@ public class MembershipFeeRepository {
             throw new RuntimeException(e);
         }
         return result;
+    }
+
+    public List<MembershipFee> findActiveFeesByCollectivityId(String collectivityId) {
+        String sql = "SELECT id, eligible_from, frequency, amount, label, status FROM membership_fee WHERE collectivity_id = ? AND status = 'ACTIVE'";
+        List<MembershipFee> fees = new ArrayList<>();
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, Integer.parseInt(collectivityId));
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                MembershipFee fee = new MembershipFee();
+                fee.setId(String.valueOf(rs.getInt("id")));
+                fee.setEligibleFrom(rs.getDate("eligible_from").toLocalDate());
+                fee.setFrequency(Frequency.valueOf(rs.getString("frequency")));
+                fee.setAmount(rs.getDouble("amount"));
+                fee.setLabel(rs.getString("label"));
+                fee.setStatus(ActivityStatus.valueOf(rs.getString("status")));
+                fees.add(fee);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return fees;
     }
 }

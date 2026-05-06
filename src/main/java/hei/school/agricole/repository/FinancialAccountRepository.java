@@ -54,43 +54,6 @@ public class FinancialAccountRepository {
         }
     }
 
-    private FinancialAccount mapRow(ResultSet rs) throws SQLException {
-        String type = rs.getString("type");
-        String id = String.valueOf(rs.getInt("id"));
-        double amount = rs.getDouble("amount");
-        String collectivityId = rs.getString("collectivity_id");
-
-        if ("CASH".equals(type)) {
-            CashAccount acc = new CashAccount();
-            acc.setId(id);
-            acc.setAmount(amount);
-            acc.setCollectivityId(collectivityId);
-            return acc;
-        } else if ("MOBILE".equals(type)) {
-            MobileBankingAccount acc = new MobileBankingAccount();
-            acc.setId(id);
-            acc.setAmount(amount);
-            acc.setCollectivityId(collectivityId);
-            acc.setHolderName(rs.getString("holder_name"));
-            acc.setMobileBankingService(MobileBankingService.valueOf(rs.getString("mobile_service")));
-            acc.setMobileNumber(rs.getString("mobile_number"));
-            return acc;
-        } else if ("BANK".equals(type)) {
-            BankAccount acc = new BankAccount();
-            acc.setId(id);
-            acc.setAmount(amount);
-            acc.setCollectivityId(collectivityId);
-            acc.setHolderName(rs.getString("holder_name"));
-            acc.setBankName(Bank.valueOf(rs.getString("bank_name")));
-            acc.setBankCode(rs.getInt("bank_code"));
-            acc.setBankBranchCode(rs.getInt("branch_code"));
-            acc.setBankAccountNumber(rs.getString("account_number"));
-            acc.setBankAccountKey(rs.getInt("rib_key"));
-            return acc;
-        }
-        throw new IllegalStateException("Unknown account type: " + type);
-    }
-
     public List<FinancialAccount> findByCollectivityId(String collectivityId) {
         String sql = "SELECT * FROM financial_account WHERE collectivity_id = ?";
         List<FinancialAccount> accounts = new ArrayList<>();
@@ -114,12 +77,49 @@ public class FinancialAccountRepository {
             ps.setInt(1, Integer.parseInt(accountId));
             ps.setDate(2, Date.valueOf(date));
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getDouble(1);
-            }
+            if (rs.next()) return rs.getDouble(1);
             return 0.0;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private FinancialAccount mapRow(ResultSet rs) throws SQLException {
+        String type = rs.getString("type");
+        String id = String.valueOf(rs.getInt("id"));
+        double amount = rs.getDouble("amount");
+        String collectivityId = rs.getString("collectivity_id");
+        String holderName = rs.getString("holder_name");
+
+        if ("CASH".equals(type)) {
+            CashAccount acc = new CashAccount();
+            acc.setId(id);
+            acc.setAmount(amount);
+            acc.setCollectivityId(collectivityId);
+            acc.setHolderName(holderName);
+            return acc;
+        } else if ("MOBILE".equals(type)) {
+            MobileBankingAccount acc = new MobileBankingAccount();
+            acc.setId(id);
+            acc.setAmount(amount);
+            acc.setCollectivityId(collectivityId);
+            acc.setHolderName(holderName);
+            acc.setMobileBankingService(MobileBankingService.valueOf(rs.getString("mobile_service")));
+            acc.setMobileNumber(rs.getString("mobile_number"));
+            return acc;
+        } else if ("BANK".equals(type)) {
+            BankAccount acc = new BankAccount();
+            acc.setId(id);
+            acc.setAmount(amount);
+            acc.setCollectivityId(collectivityId);
+            acc.setHolderName(holderName);
+            acc.setBankName(Bank.valueOf(rs.getString("bank_name")));
+            acc.setBankCode(rs.getInt("bank_code"));
+            acc.setBankBranchCode(rs.getInt("branch_code"));
+            acc.setBankAccountNumber(rs.getString("account_number"));
+            acc.setBankAccountKey(rs.getInt("rib_key"));
+            return acc;
+        }
+        throw new IllegalStateException("Unknown account type: " + type);
     }
 }

@@ -65,3 +65,24 @@ CREATE TABLE collectivity_transaction (
     account_credited_id INTEGER,
     member_debited_id INTEGER
 );
+
+DROP TABLE IF EXISTS attendance CASCADE;
+DROP TABLE IF EXISTS activity CASCADE;
+
+CREATE TABLE activity (
+    id SERIAL PRIMARY KEY,
+    collectivity_id INTEGER NOT NULL,
+    label VARCHAR(255) NOT NULL,
+    activity_type VARCHAR(20) NOT NULL,
+    member_occupation_concerned TEXT[],
+    executive_date DATE NOT NULL
+);
+
+CREATE TABLE attendance (
+    id SERIAL PRIMARY KEY,
+    activity_id INTEGER NOT NULL,
+    member_id INTEGER NOT NULL,
+    attendance_status VARCHAR(20) NOT NULL,
+    CONSTRAINT fk_attendance_activity FOREIGN KEY (activity_id) REFERENCES activity(id),
+    CONSTRAINT fk_attendance_member FOREIGN KEY (member_id) REFERENCES member(id)
+);

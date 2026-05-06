@@ -4,53 +4,12 @@ import hei.school.agricole.config.DataSource;
 import hei.school.agricole.entity.Collectivity;
 import org.springframework.stereotype.Repository;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Repository
 public class CollectivityRepository {
-
-    public boolean existsById(String id) {
-        String sql = "SELECT 1 FROM collectivity WHERE id = ?";
-        try (Connection conn = DataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(id));
-            ResultSet rs = ps.executeQuery();
-            return rs.next();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public Collectivity findById(String id) {
-        String sql = "SELECT id, name, number, location, creation_date FROM collectivity WHERE id = ?";
-        try (Connection conn = DataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(id));
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return mapRow(rs);
-            }
-            return null;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public List<Collectivity> findAll() {
-        String sql = "SELECT id, name, number, location, creation_date FROM collectivity";
-        List<Collectivity> list = new ArrayList<>();
-        try (Connection conn = DataSource.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-            while (rs.next()) {
-                list.add(mapRow(rs));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return list;
-    }
 
     public Collectivity save(Collectivity collectivity) {
         String sql = "INSERT INTO collectivity (name, number, location, creation_date) VALUES (?, ?, ?, ?) RETURNING id";
@@ -70,14 +29,58 @@ public class CollectivityRepository {
         }
     }
 
-    private Collectivity mapRow(ResultSet rs) throws SQLException {
-        Collectivity c = new Collectivity();
-        c.setId(String.valueOf(rs.getInt("id")));
-        c.setName(rs.getString("name"));
-        c.setNumber(rs.getString("number"));
-        c.setLocation(rs.getString("location"));
-        c.setCreationDate(rs.getDate("creation_date").toLocalDate());
-        return c;
+    public Collectivity findById(String id) {
+        String sql = "SELECT id, name, number, location, creation_date FROM collectivity WHERE id = ?";
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, Integer.parseInt(id));
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Collectivity c = new Collectivity();
+                c.setId(String.valueOf(rs.getInt("id")));
+                c.setName(rs.getString("name"));
+                c.setNumber(rs.getString("number"));
+                c.setLocation(rs.getString("location"));
+                c.setCreationDate(rs.getDate("creation_date").toLocalDate());
+                return c;
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<Collectivity> findAll() {
+        String sql = "SELECT id, name, number, location, creation_date FROM collectivity";
+        List<Collectivity> list = new ArrayList<>();
+        try (Connection conn = DataSource.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                Collectivity c = new Collectivity();
+                c.setId(String.valueOf(rs.getInt("id")));
+                c.setName(rs.getString("name"));
+                c.setNumber(rs.getString("number"));
+                c.setLocation(rs.getString("location"));
+                c.setCreationDate(rs.getDate("creation_date").toLocalDate());
+                list.add(c);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    public boolean existsById(String id) {
+        String sql = "SELECT 1 FROM collectivity WHERE id = ?";
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, Integer.parseInt(id));
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public boolean existsByName(String name) {
@@ -115,5 +118,20 @@ public class CollectivityRepository {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<String> findAllIds() {
+        String sql = "SELECT id FROM collectivity";
+        List<String> ids = new ArrayList<>();
+        try (Connection conn = DataSource.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                ids.add(String.valueOf(rs.getInt("id")));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return ids;
     }
 }

@@ -6,25 +6,68 @@ import hei.school.agricole.enums.PaymentMode;
 import org.springframework.stereotype.Repository;
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Repository
 public class MemberPaymentRepository {
 
     public MemberPayment save(String memberId, MemberPayment payment) {
-        String sql = "INSERT INTO member_payment (member_id, amount, payment_mode, membership_fee_id, creation_date) VALUES (?, ?, ?, ?, ?) RETURNING id, creation_date";
+        String sql = "INSERT INTO member_payment (id, member_id, amount, payment_mode, membership_fee_id, creation_date) VALUES (?, ?, ?, ?, ?, ?) RETURNING id, creation_date";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(memberId));
-            ps.setInt(2, payment.getAmount());
-            ps.setString(3, payment.getPaymentMode().name());
-            ps.setInt(4, Integer.parseInt(payment.getMembershipFeeId()));
-            ps.setDate(5, Date.valueOf(payment.getCreationDate()));
+            String id = UUID.randomUUID().toString();
+            ps.setString(1, id);
+            ps.setInt(2, Integer.parseInt(memberId));
+            ps.setInt(3, payment.getAmount());
+            ps.setString(4, payment.getPaymentMode().name());
+            ps.setInt(5, Integer.parseInt(payment.getMembershipFeeId()));
+            ps.setDate(6, Date.valueOf(payment.getCreationDate()));
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                payment.setId(String.valueOf(rs.getInt("id")));
+                payment.setId(rs.getString("id"));
                 payment.setCreationDate(rs.getDate("creation_date").toLocalDate());
             }
             return payment;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<MemberPayment> findByMemberId(String memberId) {
+        String sql = "SELECT id, amount, payment_mode, membership_fee_id, creation_date FROM member_payment WHERE member_id = ?";
+        List<MemberPayment> payments = new ArrayList<>();
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, Integer.parseInt(memberId));
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                MemberPayment p = new MemberPayment();
+                p.setId(rs.getString("id"));
+                p.setAmount(rs.getInt("amount"));
+                p.setPaymentMode(PaymentMode.valueOf(rs.getString("payment_mode")));
+                p.setMembershipFeeId(String.valueOf(rs.getInt("membership_fee_id")));
+                p.setCreationDate(rs.getDate("creation_date").toLocalDate());
+                payments.add(p);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return payments;
+    }
+
+    public Double getTotalPaymentsByMemberAndFeeBetweenDates(String memberId, String feeId, LocalDate from, LocalDate to) {
+        String sql = "SELECT COALESCE(SUM(amount), 0) FROM member_payment WHERE member_id = ? AND membership_fee_id = ? AND creation_date BETWEEN ? AND ?";
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, Integer.parseInt(memberId));
+            ps.setInt(2, Integer.parseInt(feeId));
+            ps.setDate(3, Date.valueOf(from));
+            ps.setDate(4, Date.valueOf(to));
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getDouble(1);
+            return 0.0;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

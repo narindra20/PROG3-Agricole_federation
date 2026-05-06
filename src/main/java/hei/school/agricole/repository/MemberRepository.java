@@ -2,8 +2,11 @@ package hei.school.agricole.repository;
 
 import hei.school.agricole.config.DataSource;
 import hei.school.agricole.entity.Member;
+import hei.school.agricole.enums.Gender;
+import hei.school.agricole.enums.MemberOccupation;
 import org.springframework.stereotype.Repository;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,28 +103,6 @@ public class MemberRepository {
         }
     }
 
-    private Member mapRow(ResultSet rs) throws SQLException {
-        Member member = new Member();
-        member.setId(String.valueOf(rs.getInt("id")));
-        member.setFirstName(rs.getString("first_name"));
-        member.setLastName(rs.getString("last_name"));
-        member.setCollectivityId(String.valueOf(rs.getInt("collectivity_id")));
-        member.setPhone(rs.getString("phone"));
-        member.setEmail(rs.getString("email"));
-        Date birthDate = rs.getDate("birth_date");
-
-        if (birthDate != null) member.setBirthDate(birthDate.toLocalDate());
-        String genderStr = rs.getString("gender");
-        if (genderStr != null) member.setGender(hei.school.agricole.enums.Gender.valueOf(genderStr));
-        member.setAddress(rs.getString("address"));
-        member.setProfession(rs.getString("profession"));
-        String occupationStr = rs.getString("occupation");
-        if (occupationStr != null) member.setOccupation(hei.school.agricole.enums.MemberOccupation.valueOf(occupationStr));
-        Date membershipDate = rs.getDate("membership_date");
-        if (membershipDate != null) member.setMembershipDate(membershipDate.toLocalDate());
-        return member;
-    }
-
     public List<Member> findByCollectivityId(String collectivityId) {
         String sql = "SELECT id, first_name, last_name, collectivity_id, phone, email, birth_date, gender, address, profession, occupation, membership_date FROM member WHERE collectivity_id = ?";
         List<Member> members = new ArrayList<>();
@@ -136,5 +117,45 @@ public class MemberRepository {
             throw new RuntimeException(e);
         }
         return members;
+    }
+
+    public List<Member> findActiveMembersByCollectivityId(String collectivityId) {
+        return findByCollectivityId(collectivityId);
+    }
+
+    public int countNewMembersByCollectivityIdBetweenDates(String collectivityId, LocalDate from, LocalDate to) {
+        String sql = "SELECT COUNT(*) FROM member WHERE collectivity_id = ? AND membership_date BETWEEN ? AND ?";
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, Integer.parseInt(collectivityId));
+            ps.setDate(2, Date.valueOf(from));
+            ps.setDate(3, Date.valueOf(to));
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+            return 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Member mapRow(ResultSet rs) throws SQLException {
+        Member member = new Member();
+        member.setId(String.valueOf(rs.getInt("id")));
+        member.setFirstName(rs.getString("first_name"));
+        member.setLastName(rs.getString("last_name"));
+        member.setCollectivityId(String.valueOf(rs.getInt("collectivity_id")));
+        member.setPhone(rs.getString("phone"));
+        member.setEmail(rs.getString("email"));
+        Date birthDate = rs.getDate("birth_date");
+        if (birthDate != null) member.setBirthDate(birthDate.toLocalDate());
+        String genderStr = rs.getString("gender");
+        if (genderStr != null) member.setGender(Gender.valueOf(genderStr));
+        member.setAddress(rs.getString("address"));
+        member.setProfession(rs.getString("profession"));
+        String occupationStr = rs.getString("occupation");
+        if (occupationStr != null) member.setOccupation(MemberOccupation.valueOf(occupationStr));
+        Date membershipDate = rs.getDate("membership_date");
+        if (membershipDate != null) member.setMembershipDate(membershipDate.toLocalDate());
+        return member;
     }
 }
