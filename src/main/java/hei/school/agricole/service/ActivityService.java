@@ -11,7 +11,9 @@ import hei.school.agricole.repository.ActivityRepository;
 import hei.school.agricole.repository.AttendanceRepository;
 import hei.school.agricole.repository.CollectivityRepository;
 import hei.school.agricole.repository.MemberRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +37,7 @@ public class ActivityService {
 
     public List<Activity> createActivities(String collectivityId, List<CreateActivity> activities) {
         if (!collectivityRepository.existsById(collectivityId)) {
-            throw new RuntimeException("Collectivity not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Collectivity not found");
         }
         List<Activity> result = new ArrayList<>();
         for (CreateActivity ca : activities) {
@@ -51,7 +53,7 @@ public class ActivityService {
 
     public List<Activity> getActivities(String collectivityId) {
         if (!collectivityRepository.existsById(collectivityId)) {
-            throw new RuntimeException("Collectivity not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Collectivity not found");
         }
         return activityRepository.findByCollectivityId(collectivityId);
     }
@@ -59,16 +61,16 @@ public class ActivityService {
     public List<ActivityMemberAttendance> recordAttendance(String collectivityId, String activityId, List<CreateActivityMemberAttendance> records) {
         Activity activity = activityRepository.findById(activityId);
         if (activity == null || !activity.getCollectivityId().equals(collectivityId)) {
-            throw new RuntimeException("Activity not found or does not belong to collectivity");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Activity not found or does not belong to collectivity");
         }
         List<ActivityMemberAttendance> response = new ArrayList<>();
         for (CreateActivityMemberAttendance rec : records) {
             Member member = memberRepository.findById(rec.getMemberIdentifier());
             if (member == null || !member.getCollectivityId().equals(collectivityId)) {
-                throw new RuntimeException("Member not found or not in this collectivity");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Member not found or not in this collectivity");
             }
             if (attendanceRepository.existsByActivityAndMember(activityId, rec.getMemberIdentifier())) {
-                throw new RuntimeException("Attendance already recorded for member " + rec.getMemberIdentifier());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Attendance already recorded for member " + rec.getMemberIdentifier());
             }
             Attendance att = new Attendance();
             att.setMemberId(rec.getMemberIdentifier());
@@ -78,6 +80,7 @@ public class ActivityService {
             attendanceRepository.saveAll(activityId, list);
 
             ActivityMemberAttendance ama = new ActivityMemberAttendance();
+            ama.setId(att.getId());
             MemberDescription md = new MemberDescription();
             md.setId(member.getId());
             md.setFirstName(member.getFirstName());
@@ -94,7 +97,7 @@ public class ActivityService {
     public List<ActivityMemberAttendance> getAttendance(String collectivityId, String activityId) {
         Activity activity = activityRepository.findById(activityId);
         if (activity == null || !activity.getCollectivityId().equals(collectivityId)) {
-            throw new RuntimeException("Activity not found or does not belong to collectivity");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Activity not found or does not belong to collectivity");
         }
         List<Attendance> attendances = attendanceRepository.findByActivityId(activityId);
         List<ActivityMemberAttendance> result = new ArrayList<>();

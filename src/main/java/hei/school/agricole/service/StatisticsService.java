@@ -4,7 +4,9 @@ import hei.school.agricole.dto.CollectivityLocalStatistics;
 import hei.school.agricole.dto.CollectivityOverallStatistics;
 import hei.school.agricole.repository.CollectivityRepository;
 import hei.school.agricole.repository.MemberRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -21,7 +23,7 @@ public class StatisticsService {
 
     public List<CollectivityLocalStatistics> getMemberStatistics(String collectivityId, LocalDate from, LocalDate to) {
         if (!collectivityRepository.existsById(collectivityId)) {
-            throw new RuntimeException("Collectivity not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Collectivity not found");
         }
         return memberRepository.getLocalStatistics(collectivityId, from, to);
     }
