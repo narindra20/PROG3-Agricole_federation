@@ -1,9 +1,6 @@
 package hei.school.agricole.controller;
 
-import hei.school.agricole.dto.CollectivityInformation;
-import hei.school.agricole.dto.CollectivityWithMembers;
-import hei.school.agricole.dto.CreateCollectivity;
-import hei.school.agricole.dto.FinancialAccountResponse;
+import hei.school.agricole.dto.*;
 import hei.school.agricole.entity.Collectivity;
 import hei.school.agricole.service.CollectivityService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -48,5 +45,20 @@ public class CollectivityController {
             @PathVariable String id,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate at) {
         return service.getFinancialAccounts(id, at);
+    }
+
+    @GetMapping("/{id}/statistics")
+    public List<MemberStatistics> getCollectivityStatistics(
+            @PathVariable String id,
+            @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return service.getMemberStatistics(id, from, to);
+    }
+
+    @GetMapping("/statistics")
+    public List<FederationStatisticsDto> getFederationStatistics(
+            @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return service.getFederationStatistics(from, to);
     }
 }
