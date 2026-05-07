@@ -1,36 +1,19 @@
 package hei.school.agricole.dto;
 
-import java.time.LocalDate;
+import java.util.List;
 
 public class CreateCollectivity {
-    private String name;
-    private String number;
     private String location;
-    private LocalDate creationDate;
+    private List<String> members;
+    private boolean federationApproval;
+    private CreateCollectivityStructure structure;
 
-
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getNumber() {
-        return number;
-    }
-    public void setNumber(String number) {
-        this.number = number;
-    }
-    public String getLocation() {
-        return location;
-    }
-    public void setLocation(String location) {
-        this.location = location;
-    }
-    public LocalDate getCreationDate() {
-        return creationDate;
-    }
-    public void setCreationDate(LocalDate creationDate) {
-        this.creationDate = creationDate;
-    }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+    public List<String> getMembers() { return members; }
+    public void setMembers(List<String> members) { this.members = members; }
+    public boolean isFederationApproval() { return federationApproval; }
+    public void setFederationApproval(boolean federationApproval) { this.federationApproval = federationApproval; }
+    public CreateCollectivityStructure getStructure() { return structure; }
+    public void setStructure(CreateCollectivityStructure structure) { this.structure = structure; }
 }

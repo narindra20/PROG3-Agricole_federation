@@ -38,8 +38,8 @@ public class CollectivityService {
 
     public Collectivity create(CreateCollectivity request) {
         Collectivity collectivity = new Collectivity();
-        collectivity.setName(request.getName());
-        collectivity.setNumber(request.getNumber());
+        collectivity.setName(null);
+        collectivity.setNumber(null);
         collectivity.setLocation(request.getLocation());
         collectivity.setCreationDate(LocalDate.now());
         return repository.save(collectivity);

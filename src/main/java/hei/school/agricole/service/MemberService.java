@@ -40,7 +40,6 @@ public class MemberService {
         member.setProfession(dto.getProfession());
         member.setOccupation(dto.getOccupation());
         member.setMembershipDate(dto.getMembershipDate());
-
         return memberRepository.save(member);
     }
 

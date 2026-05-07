@@ -27,8 +27,8 @@ public class CollectivityController {
     }
 
     @PostMapping
-    public Collectivity create(@RequestBody CreateCollectivity request) {
-        return service.create(request);
+    public List<Collectivity> create(@RequestBody List<CreateCollectivity> requests) {
+        return requests.stream().map(service::create).toList();
     }
 
     @PutMapping("/{id}/informations")
