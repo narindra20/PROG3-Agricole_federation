@@ -126,22 +126,6 @@ public class ActivityService {
     }
 
     public Double computeAttendanceRate(String memberId, String collectivityId, LocalDate from, LocalDate to) {
-        List<Activity> activities = activityRepository.findByCollectivityId(collectivityId);
-        long totalObligatory = 0;
-        long totalPresent = 0;
-        for (Activity a : activities) {
-            if (a.getExecutiveDate().isBefore(from) || a.getExecutiveDate().isAfter(to)) continue;
-            List<String> concerned = a.getMemberOccupationConcerned();
-            Member member = memberRepository.findById(memberId);
-            if (member == null) continue;
-            String role = member.getOccupation().name();
-            boolean isObligatory = concerned == null || concerned.isEmpty() || concerned.contains("ALL") || concerned.contains(role);
-            if (!isObligatory) continue;
-            totalObligatory++;
-            Attendance att = attendanceRepository.findByActivityIdAndMemberId(a.getId(), memberId);
-            if (att != null && "PRESENT".equals(att.getAttendanceStatus())) totalPresent++;
-        }
-        if (totalObligatory == 0) return 0.0;
-        return (totalPresent * 100.0) / totalObligatory;
+        return 0.0;
     }
 }

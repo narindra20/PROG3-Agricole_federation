@@ -139,72 +139,35 @@ public class CollectivityRepository {
 
     public List<CollectivityOverallStatistics> getOverallStatistics(LocalDate from, LocalDate to) {
         String sql = """
-        WITH member_payments AS (
-            SELECT m.collectivity_id, m.id AS member_id, COALESCE(SUM(mp.amount), 0) AS total_paid
-            FROM member m
-            LEFT JOIN member_payment mp ON mp.member_id = m.id AND mp.creation_date BETWEEN ? AND ?
-            GROUP BY m.collectivity_id, m.id
-        ),
-        active_fees AS (
-            SELECT collectivity_id, SUM(amount) AS total_due
-            FROM membership_fee
-            WHERE status = 'ACTIVE' AND eligible_from <= ?
-            GROUP BY collectivity_id
-        ),
-        member_up_to_date AS (
-            SELECT mp.collectivity_id, mp.member_id,
-                   CASE WHEN mp.total_paid >= COALESCE(af.total_due, 0) THEN 1 ELSE 0 END AS is_up_to_date
-            FROM member_payments mp
-            LEFT JOIN active_fees af ON af.collectivity_id = mp.collectivity_id
-        ),
-        new_members AS (
-            SELECT collectivity_id, COUNT(*) AS new_count
-            FROM member
-            WHERE membership_date BETWEEN ? AND ?
-            GROUP BY collectivity_id
-        ),
-        mandatory_activities AS (
-            SELECT collectivity_id, COUNT(*) AS total_mandatory
-            FROM activity
-            WHERE activity_type IN ('MEETING', 'TRAINING')
-              AND executive_date BETWEEN ? AND ?
-            GROUP BY collectivity_id
-        ),
-        member_attendance AS (
-            SELECT a.collectivity_id, att.member_id,
-                   COUNT(CASE WHEN att.attendance_status = 'ATTENDED' THEN 1 END) AS attended_count
-            FROM attendance att
-            JOIN activity a ON att.activity_id = a.id
-            WHERE a.activity_type IN ('MEETING', 'TRAINING')
-              AND a.executive_date BETWEEN ? AND ?
-            GROUP BY a.collectivity_id, att.member_id
-        ),
-        member_assiduity AS (
-            SELECT ma.collectivity_id, ma.member_id,
-                   CASE
-                       WHEN mac.total_mandatory = 0 THEN 100.0
-                       ELSE COALESCE(ma.attended_count, 0) * 100.0 / mac.total_mandatory
-                   END AS assiduity_percentage
-            FROM member_attendance ma
-            JOIN mandatory_activities mac ON mac.collectivity_id = ma.collectivity_id
-            UNION
-            SELECT m.collectivity_id, m.id, 100.0
-            FROM member m
-            WHERE NOT EXISTS (
-                SELECT 1 FROM mandatory_activities mac WHERE mac.collectivity_id = m.collectivity_id
-            )
-        )
         SELECT c.id,
                c.name,
                c.number,
                COALESCE(nm.new_count, 0) AS new_members,
-               COALESCE(AVG(CASE WHEN mut.is_up_to_date = 1 THEN 1.0 ELSE 0.0 END) * 100.0, 0) AS pct_up_to_date,
-               COALESCE(AVG(ma.assiduity_percentage), 0) AS avg_assiduity
+               COALESCE(pct.pct, 0) AS pct_up_to_date
         FROM collectivity c
-        LEFT JOIN new_members nm ON nm.collectivity_id = c.id
-        LEFT JOIN member_up_to_date mut ON mut.collectivity_id = c.id
-        LEFT JOIN member_assiduity ma ON ma.collectivity_id = c.id
-        GROUP BY c.id, c.name, c.number, nm.new_count
+        LEFT JOIN (
+            SELECT collectivity_id, COUNT(*) AS new_count
+            FROM member
+            WHERE membership_date BETWEEN ? AND ?
+            GROUP BY collectivity_id
+        ) nm ON nm.collectivity_id = c.id
+        LEFT JOIN (
+            SELECT mp.collectivity_id,
+                   100.0 * COUNT(CASE WHEN mp.total_paid >= af.total_due THEN 1 END) / COUNT(*) AS pct
+            FROM (
+                SELECT m.collectivity_id, m.id AS member_id, COALESCE(SUM(mp.amount), 0) AS total_paid
+                FROM member m
+                LEFT JOIN member_payment mp ON mp.member_id = m.id AND mp.creation_date BETWEEN ? AND ?
+                GROUP BY m.collectivity_id, m.id
+            ) mp
+            LEFT JOIN (
+                SELECT collectivity_id, SUM(amount) AS total_due
+                FROM membership_fee
+                WHERE status = 'ACTIVE' AND eligible_from <= ?
+                GROUP BY collectivity_id
+            ) af ON af.collectivity_id = mp.collectivity_id
+            GROUP BY mp.collectivity_id
+        ) pct ON pct.collectivity_id = c.id
         ORDER BY c.id
     """;
         try (Connection conn = DataSource.getConnection();
@@ -212,14 +175,9 @@ public class CollectivityRepository {
             int idx = 1;
             ps.setDate(idx++, Date.valueOf(from));
             ps.setDate(idx++, Date.valueOf(to));
-            ps.setDate(idx++, Date.valueOf(to));
             ps.setDate(idx++, Date.valueOf(from));
             ps.setDate(idx++, Date.valueOf(to));
-            ps.setDate(idx++, Date.valueOf(from));
             ps.setDate(idx++, Date.valueOf(to));
-            ps.setDate(idx++, Date.valueOf(from));
-            ps.setDate(idx++, Date.valueOf(to));
-
             ResultSet rs = ps.executeQuery();
             List<CollectivityOverallStatistics> list = new ArrayList<>();
             while (rs.next()) {
@@ -230,7 +188,7 @@ public class CollectivityRepository {
                 stat.setCollectivityInformation(info);
                 stat.setNewMembersNumber(rs.getInt("new_members"));
                 stat.setOverallMemberCurrentDuePercentage(rs.getDouble("pct_up_to_date"));
-                stat.setOverallMemberAssiduityPercentage(rs.getDouble("avg_assiduity"));
+                stat.setOverallMemberAssiduityPercentage(0.0);
                 list.add(stat);
             }
             return list;

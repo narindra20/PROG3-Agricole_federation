@@ -11,6 +11,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public class MemberRepository {
@@ -40,13 +41,10 @@ public class MemberRepository {
     }
 
     public Member save(Member member) {
+        String id = UUID.randomUUID().toString();
         String sql = "INSERT INTO member (id, first_name, last_name, collectivity_id, phone, email, birth_date, gender, address, profession, occupation, membership_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            String id = member.getId();
-            if (id == null || id.trim().isEmpty()) {
-                id = java.util.UUID.randomUUID().toString();
-            }
             ps.setString(1, id);
             ps.setString(2, member.getFirstName());
             ps.setString(3, member.getLastName());
@@ -60,6 +58,7 @@ public class MemberRepository {
             ps.setString(11, member.getOccupation() != null ? member.getOccupation().name() : null);
             ps.setDate(12, member.getMembershipDate() != null ? Date.valueOf(member.getMembershipDate()) : null);
             ps.executeUpdate();
+            member.setId(id);
             return member;
         } catch (SQLException e) {
             throw new RuntimeException(e);
