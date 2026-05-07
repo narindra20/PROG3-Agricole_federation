@@ -1,155 +1,199 @@
 package hei.school.agricole.repository;
 
 import hei.school.agricole.config.DataSource;
+import hei.school.agricole.dto.CollectivityInformation;
+import hei.school.agricole.dto.CollectivityOverallStatistics;
 import hei.school.agricole.entity.Collectivity;
 import org.springframework.stereotype.Repository;
-
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Repository
 public class CollectivityRepository {
 
-    private final Connection connection;
-
-    public CollectivityRepository() {
-        try {
-            this.connection = new DataSource().getConnection();
+    public Collectivity save(Collectivity collectivity) {
+        String id = java.util.UUID.randomUUID().toString();
+        String sql = "INSERT INTO collectivity (id, name, number, location, creation_date) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, id);
+            ps.setString(2, collectivity.getName());
+            ps.setString(3, collectivity.getNumber());
+            ps.setString(4, collectivity.getLocation());
+            ps.setDate(5, Date.valueOf(collectivity.getCreationDate()));
+            ps.executeUpdate();
+            collectivity.setId(id);
+            return collectivity;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Collectivity save(Collectivity c) {
-
-        String sql = """
-            INSERT INTO collectivity
-            (location, creation_date, city_id, domain_id, federation_id, sector_id, is_authorized)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            RETURNING id
-        """;
-
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-
-            ps.setString(1, c.getLocation());
-            ps.setDate(2, Date.valueOf(c.getCreationDate()));
-            ps.setInt(3, c.getCityId());
-            ps.setInt(4, c.getDomainId());
-
-            if (c.getFederationId() != null)
-                ps.setInt(5, c.getFederationId());
-            else
-                ps.setNull(5, Types.INTEGER);
-
-            if (c.getSectorId() != null)
-                ps.setInt(6, c.getSectorId());
-            else
-                ps.setNull(6, Types.INTEGER);
-
-            ps.setBoolean(7, c.isAuthorized());
-
+    public Collectivity findById(String id) {
+        String sql = "SELECT id, name, number, location, creation_date FROM collectivity WHERE id = ?";
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, id);
             ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                c.setId(rs.getInt("id"));
-            }
-
-            return c;
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public boolean existsByNumberOrName(String number, String name) {
-
-        String sql = "SELECT 1 FROM collectivity WHERE number = ? OR name = ?";
-
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-
-            ps.setString(1, number);
-            ps.setString(2, name);
-
-            ResultSet rs = ps.executeQuery();
-            return rs.next();
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public Collectivity updateIdentity(String id, String number, String name) {
-
-        String sql = """
-            UPDATE collectivity
-            SET number = ?, name = ?
-            WHERE id = ?
-            RETURNING *
-        """;
-
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-
-            ps.setString(1, number);
-            ps.setString(2, name);
-            ps.setInt(3, Integer.parseInt(id));
-
-            ResultSet rs = ps.executeQuery();
-
             if (rs.next()) {
                 Collectivity c = new Collectivity();
-
-                c.setId(rs.getInt("id"));
-                c.setNumber(rs.getString("number"));
+                c.setId(rs.getString("id"));
                 c.setName(rs.getString("name"));
+                c.setNumber(rs.getString("number"));
                 c.setLocation(rs.getString("location"));
                 c.setCreationDate(rs.getDate("creation_date").toLocalDate());
-                c.setCityId(rs.getInt("city_id"));
-                c.setDomainId(rs.getInt("domain_id"));
-                c.setFederationId(rs.getObject("federation_id", Integer.class));
-                c.setSectorId(rs.getObject("sector_id", Integer.class));
-                c.setAuthorized(rs.getBoolean("is_authorized"));
-
                 return c;
             }
-
             return null;
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     public List<Collectivity> findAll() {
-
-        String sql = "SELECT * FROM collectivity";
-
+        String sql = "SELECT id, name, number, location, creation_date FROM collectivity";
         List<Collectivity> list = new ArrayList<>();
-
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-
+        try (Connection conn = DataSource.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
                 Collectivity c = new Collectivity();
-
-                c.setId(rs.getInt("id"));
-                c.setNumber(rs.getString("number"));
+                c.setId(rs.getString("id"));
                 c.setName(rs.getString("name"));
+                c.setNumber(rs.getString("number"));
                 c.setLocation(rs.getString("location"));
                 c.setCreationDate(rs.getDate("creation_date").toLocalDate());
-                c.setCityId(rs.getInt("city_id"));
-                c.setDomainId(rs.getInt("domain_id"));
-                c.setFederationId(rs.getObject("federation_id", Integer.class));
-                c.setSectorId(rs.getObject("sector_id", Integer.class));
-                c.setAuthorized(rs.getBoolean("is_authorized"));
-
                 list.add(c);
             }
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
         return list;
+    }
+
+    public boolean existsById(String id) {
+        String sql = "SELECT 1 FROM collectivity WHERE id = ?";
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, id);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean existsByName(String name) {
+        String sql = "SELECT 1 FROM collectivity WHERE name = ?";
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, name);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean existsByNumber(String number) {
+        String sql = "SELECT 1 FROM collectivity WHERE number = ?";
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, number);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void updateInformation(String id, String name, String number) {
+        String sql = "UPDATE collectivity SET name = ?, number = ? WHERE id = ?";
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, name);
+            ps.setString(2, number);
+            ps.setString(3, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<String> findAllIds() {
+        String sql = "SELECT id FROM collectivity";
+        List<String> ids = new ArrayList<>();
+        try (Connection conn = DataSource.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                ids.add(rs.getString("id"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return ids;
+    }
+
+    public List<CollectivityOverallStatistics> getOverallStatistics(LocalDate from, LocalDate to) {
+        String sql = """
+        SELECT c.id,
+               c.name,
+               c.number,
+               COALESCE(nm.new_count, 0) AS new_members,
+               COALESCE(pct.pct, 0) AS pct_up_to_date
+        FROM collectivity c
+        LEFT JOIN (
+            SELECT collectivity_id, COUNT(*) AS new_count
+            FROM member
+            WHERE membership_date BETWEEN ? AND ?
+            GROUP BY collectivity_id
+        ) nm ON nm.collectivity_id = c.id
+        LEFT JOIN (
+            SELECT mp.collectivity_id,
+                   100.0 * COUNT(CASE WHEN mp.total_paid >= af.total_due THEN 1 END) / COUNT(*) AS pct
+            FROM (
+                SELECT m.collectivity_id, m.id AS member_id, COALESCE(SUM(mp.amount), 0) AS total_paid
+                FROM member m
+                LEFT JOIN member_payment mp ON mp.member_id = m.id AND mp.creation_date BETWEEN ? AND ?
+                GROUP BY m.collectivity_id, m.id
+            ) mp
+            LEFT JOIN (
+                SELECT collectivity_id, SUM(amount) AS total_due
+                FROM membership_fee
+                WHERE status = 'ACTIVE' AND eligible_from <= ?
+                GROUP BY collectivity_id
+            ) af ON af.collectivity_id = mp.collectivity_id
+            GROUP BY mp.collectivity_id
+        ) pct ON pct.collectivity_id = c.id
+        ORDER BY c.id
+    """;
+        try (Connection conn = DataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int idx = 1;
+            ps.setDate(idx++, Date.valueOf(from));
+            ps.setDate(idx++, Date.valueOf(to));
+            ps.setDate(idx++, Date.valueOf(from));
+            ps.setDate(idx++, Date.valueOf(to));
+            ps.setDate(idx++, Date.valueOf(to));
+            ResultSet rs = ps.executeQuery();
+            List<CollectivityOverallStatistics> list = new ArrayList<>();
+            while (rs.next()) {
+                CollectivityOverallStatistics stat = new CollectivityOverallStatistics();
+                CollectivityInformation info = new CollectivityInformation();
+                info.setName(rs.getString("name"));
+                info.setNumber(rs.getString("number"));
+                stat.setCollectivityInformation(info);
+                stat.setNewMembersNumber(rs.getInt("new_members"));
+                stat.setOverallMemberCurrentDuePercentage(rs.getDouble("pct_up_to_date"));
+                stat.setOverallMemberAssiduityPercentage(0.0);
+                list.add(stat);
+            }
+            return list;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

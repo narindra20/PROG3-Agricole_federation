@@ -1,14 +1,16 @@
-package hei.school.agricole.entity;
+package hei.school.agricole.dto;
 
+import hei.school.agricole.entity.Member;
 import java.time.LocalDate;
+import java.util.List;
 
-public class Collectivity {
+public class CollectivityWithMembers {
     private String id;
     private String name;
     private String number;
     private String location;
     private LocalDate creationDate;
-
+    private List<Member> members;
 
     public String getId() {
         return id;
@@ -39,5 +41,11 @@ public class Collectivity {
     }
     public void setCreationDate(LocalDate creationDate) {
         this.creationDate = creationDate;
+    }
+    public List<Member> getMembers() {
+        return members;
+    }
+    public void setMembers(List<Member> members) {
+        this.members = members;
     }
 }
