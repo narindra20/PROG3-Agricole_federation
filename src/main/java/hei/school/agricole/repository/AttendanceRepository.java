@@ -63,20 +63,19 @@ public class AttendanceRepository {
     }
 
     public Attendance findByActivityIdAndMemberId(String activityId, String memberId) {
-        String sql = "SELECT id, activity_id, member_id, attendance_status, recorded_at FROM attendance WHERE activity_id = ? AND member_id = ?";
+        String sql = "SELECT id, activity_id, member_id, attendance_status FROM attendance WHERE activity_id = ? AND member_id = ?";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, activityId);
             ps.setString(2, memberId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                Attendance att = new Attendance();
-                att.setId(rs.getString("id"));
-                att.setActivityId(rs.getString("activity_id"));
-                att.setMemberId(rs.getString("member_id"));
-                att.setAttendanceStatus(rs.getString("attendance_status"));
-                att.setRecordedAt(rs.getTimestamp("recorded_at").toLocalDateTime());
-                return att;
+                Attendance a = new Attendance();
+                a.setId(rs.getString("id"));
+                a.setActivityId(rs.getString("activity_id"));
+                a.setMemberId(rs.getString("member_id"));
+                a.setAttendanceStatus(rs.getString("attendance_status"));
+                return a;
             }
             return null;
         } catch (SQLException e) {
