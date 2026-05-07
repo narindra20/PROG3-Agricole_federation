@@ -44,7 +44,11 @@ public class ActivityService {
             Activity a = new Activity();
             a.setLabel(ca.getLabel());
             a.setActivityType(ca.getActivityType());
-            a.setMemberOccupationConcerned(ca.getMemberOccupationConcerned());
+            List<String> occupations = ca.getMemberOccupationConcerned();
+            if (occupations == null) {
+                occupations = new ArrayList<>();
+            }
+            a.setMemberOccupationConcerned(occupations);
             a.setExecutiveDate(ca.getExecutiveDate());
             result.add(activityRepository.save(collectivityId, a));
         }
