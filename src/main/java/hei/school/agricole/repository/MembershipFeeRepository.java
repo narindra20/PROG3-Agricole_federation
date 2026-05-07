@@ -10,6 +10,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public class MembershipFeeRepository {
@@ -19,11 +20,11 @@ public class MembershipFeeRepository {
         List<MembershipFee> list = new ArrayList<>();
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(collectivityId));
+            ps.setString(1, collectivityId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 MembershipFee fee = new MembershipFee();
-                fee.setId(String.valueOf(rs.getInt("id")));
+                fee.setId(rs.getString("id"));
                 fee.setEligibleFrom(rs.getDate("eligible_from").toLocalDate());
                 fee.setFrequency(Frequency.valueOf(rs.getString("frequency")));
                 fee.setAmount(rs.getDouble("amount"));
@@ -41,11 +42,11 @@ public class MembershipFeeRepository {
         String sql = "SELECT id, eligible_from, frequency, amount, label, status FROM membership_fee WHERE id = ?";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(id));
+            ps.setString(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 MembershipFee fee = new MembershipFee();
-                fee.setId(String.valueOf(rs.getInt("id")));
+                fee.setId(rs.getString("id"));
                 fee.setEligibleFrom(rs.getDate("eligible_from").toLocalDate());
                 fee.setFrequency(Frequency.valueOf(rs.getString("frequency")));
                 fee.setAmount(rs.getDouble("amount"));
@@ -60,28 +61,28 @@ public class MembershipFeeRepository {
     }
 
     public List<MembershipFee> saveAll(String collectivityId, List<CreateMembershipFee> fees) {
-        String sql = "INSERT INTO membership_fee (collectivity_id, eligible_from, frequency, amount, label, status) VALUES (?, ?, ?, ?, ?, ?) RETURNING id";
+        String sql = "INSERT INTO membership_fee (id, collectivity_id, eligible_from, frequency, amount, label, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
         List<MembershipFee> result = new ArrayList<>();
         try (Connection conn = DataSource.getConnection()) {
             for (CreateMembershipFee f : fees) {
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                    ps.setInt(1, Integer.parseInt(collectivityId));
-                    ps.setDate(2, Date.valueOf(f.getEligibleFrom()));
-                    ps.setString(3, f.getFrequency().name());
-                    ps.setDouble(4, f.getAmount());
-                    ps.setString(5, f.getLabel());
-                    ps.setString(6, ActivityStatus.ACTIVE.name());
-                    ResultSet rs = ps.executeQuery();
-                    if (rs.next()) {
-                        MembershipFee saved = new MembershipFee();
-                        saved.setId(String.valueOf(rs.getInt("id")));
-                        saved.setEligibleFrom(f.getEligibleFrom());
-                        saved.setFrequency(f.getFrequency());
-                        saved.setAmount(f.getAmount());
-                        saved.setLabel(f.getLabel());
-                        saved.setStatus(ActivityStatus.ACTIVE);
-                        result.add(saved);
-                    }
+                    String id = UUID.randomUUID().toString();
+                    ps.setString(1, id);
+                    ps.setString(2, collectivityId);
+                    ps.setDate(3, Date.valueOf(f.getEligibleFrom()));
+                    ps.setString(4, f.getFrequency().name());
+                    ps.setDouble(5, f.getAmount());
+                    ps.setString(6, f.getLabel());
+                    ps.setString(7, ActivityStatus.ACTIVE.name());
+                    ps.executeUpdate();
+                    MembershipFee saved = new MembershipFee();
+                    saved.setId(id);
+                    saved.setEligibleFrom(f.getEligibleFrom());
+                    saved.setFrequency(f.getFrequency());
+                    saved.setAmount(f.getAmount());
+                    saved.setLabel(f.getLabel());
+                    saved.setStatus(ActivityStatus.ACTIVE);
+                    result.add(saved);
                 }
             }
         } catch (SQLException e) {
@@ -95,11 +96,11 @@ public class MembershipFeeRepository {
         List<MembershipFee> fees = new ArrayList<>();
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(collectivityId));
+            ps.setString(1, collectivityId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 MembershipFee fee = new MembershipFee();
-                fee.setId(String.valueOf(rs.getInt("id")));
+                fee.setId(rs.getString("id"));
                 fee.setEligibleFrom(rs.getDate("eligible_from").toLocalDate());
                 fee.setFrequency(Frequency.valueOf(rs.getString("frequency")));
                 fee.setAmount(rs.getDouble("amount"));

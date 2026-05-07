@@ -40,24 +40,26 @@ public class MemberRepository {
     }
 
     public Member save(Member member) {
-        String sql = "INSERT INTO member (first_name, last_name, collectivity_id, phone, email, birth_date, gender, address, profession, occupation, membership_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
+        String sql = "INSERT INTO member (id, first_name, last_name, collectivity_id, phone, email, birth_date, gender, address, profession, occupation, membership_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, member.getFirstName());
-            ps.setString(2, member.getLastName());
-            ps.setInt(3, Integer.parseInt(member.getCollectivityId()));
-            ps.setString(4, member.getPhone());
-            ps.setString(5, member.getEmail());
-            ps.setDate(6, member.getBirthDate() != null ? Date.valueOf(member.getBirthDate()) : null);
-            ps.setString(7, member.getGender() != null ? member.getGender().name() : null);
-            ps.setString(8, member.getAddress());
-            ps.setString(9, member.getProfession());
-            ps.setString(10, member.getOccupation() != null ? member.getOccupation().name() : null);
-            ps.setDate(11, member.getMembershipDate() != null ? Date.valueOf(member.getMembershipDate()) : null);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                member.setId(String.valueOf(rs.getInt("id")));
+            String id = member.getId();
+            if (id == null || id.trim().isEmpty()) {
+                id = java.util.UUID.randomUUID().toString();
             }
+            ps.setString(1, id);
+            ps.setString(2, member.getFirstName());
+            ps.setString(3, member.getLastName());
+            ps.setString(4, member.getCollectivityId());
+            ps.setString(5, member.getPhone());
+            ps.setString(6, member.getEmail());
+            ps.setDate(7, member.getBirthDate() != null ? Date.valueOf(member.getBirthDate()) : null);
+            ps.setString(8, member.getGender() != null ? member.getGender().name() : null);
+            ps.setString(9, member.getAddress());
+            ps.setString(10, member.getProfession());
+            ps.setString(11, member.getOccupation() != null ? member.getOccupation().name() : null);
+            ps.setDate(12, member.getMembershipDate() != null ? Date.valueOf(member.getMembershipDate()) : null);
+            ps.executeUpdate();
             return member;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -83,7 +85,7 @@ public class MemberRepository {
         String sql = "SELECT id, first_name, last_name, collectivity_id, phone, email, birth_date, gender, address, profession, occupation, membership_date FROM member WHERE id = ?";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(id));
+            ps.setString(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return mapRow(rs);
@@ -98,7 +100,7 @@ public class MemberRepository {
         String sql = "DELETE FROM member WHERE id = ?";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(id));
+            ps.setString(1, id);
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -110,7 +112,7 @@ public class MemberRepository {
         List<Member> members = new ArrayList<>();
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(collectivityId));
+            ps.setString(1, collectivityId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 members.add(mapRow(rs));
@@ -129,7 +131,7 @@ public class MemberRepository {
         String sql = "SELECT COUNT(*) FROM member WHERE collectivity_id = ? AND membership_date BETWEEN ? AND ?";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(collectivityId));
+            ps.setString(1, collectivityId);
             ps.setDate(2, Date.valueOf(from));
             ps.setDate(3, Date.valueOf(to));
             ResultSet rs = ps.executeQuery();
@@ -190,24 +192,24 @@ public class MemberRepository {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             int idx = 1;
-            ps.setInt(idx++, Integer.parseInt(collectivityId));
+            ps.setString(idx++, collectivityId);
             ps.setDate(idx++, Date.valueOf(to));
-            ps.setInt(idx++, Integer.parseInt(collectivityId));
+            ps.setString(idx++, collectivityId);
             ps.setDate(idx++, Date.valueOf(from));
             ps.setDate(idx++, Date.valueOf(to));
             ps.setDate(idx++, Date.valueOf(from));
             ps.setDate(idx++, Date.valueOf(to));
-            ps.setInt(idx++, Integer.parseInt(collectivityId));
+            ps.setString(idx++, collectivityId);
             ps.setDate(idx++, Date.valueOf(from));
             ps.setDate(idx++, Date.valueOf(to));
-            ps.setInt(idx, Integer.parseInt(collectivityId));
+            ps.setString(idx, collectivityId);
 
             ResultSet rs = ps.executeQuery();
             List<CollectivityLocalStatistics> list = new ArrayList<>();
             while (rs.next()) {
                 CollectivityLocalStatistics stat = new CollectivityLocalStatistics();
                 MemberDescription desc = new MemberDescription();
-                desc.setId(String.valueOf(rs.getInt("id")));
+                desc.setId(rs.getString("id"));
                 desc.setFirstName(rs.getString("first_name"));
                 desc.setLastName(rs.getString("last_name"));
                 desc.setEmail(rs.getString("email"));
@@ -226,10 +228,10 @@ public class MemberRepository {
 
     private Member mapRow(ResultSet rs) throws SQLException {
         Member member = new Member();
-        member.setId(String.valueOf(rs.getInt("id")));
+        member.setId(rs.getString("id"));
         member.setFirstName(rs.getString("first_name"));
         member.setLastName(rs.getString("last_name"));
-        member.setCollectivityId(String.valueOf(rs.getInt("collectivity_id")));
+        member.setCollectivityId(rs.getString("collectivity_id"));
         member.setPhone(rs.getString("phone"));
         member.setEmail(rs.getString("email"));
         Date birthDate = rs.getDate("birth_date");

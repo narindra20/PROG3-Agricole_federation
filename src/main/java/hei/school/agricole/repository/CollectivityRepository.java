@@ -23,7 +23,7 @@ public class CollectivityRepository {
             ps.setDate(4, Date.valueOf(collectivity.getCreationDate()));
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                collectivity.setId(String.valueOf(rs.getInt("id")));
+                collectivity.setId(rs.getString("id"));
             }
             return collectivity;
         } catch (SQLException e) {
@@ -35,11 +35,11 @@ public class CollectivityRepository {
         String sql = "SELECT id, name, number, location, creation_date FROM collectivity WHERE id = ?";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(id));
+            ps.setString(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 Collectivity c = new Collectivity();
-                c.setId(String.valueOf(rs.getInt("id")));
+                c.setId(rs.getString("id"));
                 c.setName(rs.getString("name"));
                 c.setNumber(rs.getString("number"));
                 c.setLocation(rs.getString("location"));
@@ -60,7 +60,7 @@ public class CollectivityRepository {
              ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
                 Collectivity c = new Collectivity();
-                c.setId(String.valueOf(rs.getInt("id")));
+                c.setId(rs.getString("id"));
                 c.setName(rs.getString("name"));
                 c.setNumber(rs.getString("number"));
                 c.setLocation(rs.getString("location"));
@@ -77,7 +77,7 @@ public class CollectivityRepository {
         String sql = "SELECT 1 FROM collectivity WHERE id = ?";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(id));
+            ps.setString(1, id);
             ResultSet rs = ps.executeQuery();
             return rs.next();
         } catch (SQLException e) {
@@ -115,7 +115,7 @@ public class CollectivityRepository {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, name);
             ps.setString(2, number);
-            ps.setInt(3, Integer.parseInt(id));
+            ps.setString(3, id);
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -129,7 +129,7 @@ public class CollectivityRepository {
              Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
-                ids.add(String.valueOf(rs.getInt("id")));
+                ids.add(rs.getString("id"));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

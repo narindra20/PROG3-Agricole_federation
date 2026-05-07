@@ -6,24 +6,25 @@ import org.springframework.stereotype.Repository;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public class ActivityRepository {
 
     public Activity save(String collectivityId, Activity activity) {
-        String sql = "INSERT INTO activity (collectivity_id, label, activity_type, member_occupation_concerned, executive_date) VALUES (?, ?, ?, ?, ?) RETURNING id";
+        String sql = "INSERT INTO activity (id, collectivity_id, label, activity_type, member_occupation_concerned, executive_date) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(collectivityId));
-            ps.setString(2, activity.getLabel());
-            ps.setString(3, activity.getActivityType());
+            String id = UUID.randomUUID().toString();
+            ps.setString(1, id);
+            ps.setString(2, collectivityId);
+            ps.setString(3, activity.getLabel());
+            ps.setString(4, activity.getActivityType());
             Array array = conn.createArrayOf("varchar", activity.getMemberOccupationConcerned().toArray(new String[0]));
-            ps.setArray(4, array);
-            ps.setDate(5, Date.valueOf(activity.getExecutiveDate()));
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                activity.setId(String.valueOf(rs.getInt("id")));
-            }
+            ps.setArray(5, array);
+            ps.setDate(6, Date.valueOf(activity.getExecutiveDate()));
+            ps.executeUpdate();
+            activity.setId(id);
             return activity;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -35,11 +36,11 @@ public class ActivityRepository {
         List<Activity> list = new ArrayList<>();
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(collectivityId));
+            ps.setString(1, collectivityId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Activity a = new Activity();
-                a.setId(String.valueOf(rs.getInt("id")));
+                a.setId(rs.getString("id"));
                 a.setLabel(rs.getString("label"));
                 a.setActivityType(rs.getString("activity_type"));
                 Array array = rs.getArray("member_occupation_concerned");
@@ -60,12 +61,12 @@ public class ActivityRepository {
         String sql = "SELECT collectivity_id, label, activity_type, member_occupation_concerned, executive_date FROM activity WHERE id = ?";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(activityId));
+            ps.setString(1, activityId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 Activity a = new Activity();
                 a.setId(activityId);
-                a.setCollectivityId(String.valueOf(rs.getInt("collectivity_id")));
+                a.setCollectivityId(rs.getString("collectivity_id"));
                 a.setLabel(rs.getString("label"));
                 a.setActivityType(rs.getString("activity_type"));
                 Array array = rs.getArray("member_occupation_concerned");

@@ -6,18 +6,21 @@ import org.springframework.stereotype.Repository;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public class AttendanceRepository {
 
     public void saveAll(String activityId, List<Attendance> attendances) {
-        String sql = "INSERT INTO attendance (activity_id, member_id, attendance_status) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO attendance (id, activity_id, member_id, attendance_status) VALUES (?, ?, ?, ?)";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             for (Attendance a : attendances) {
-                ps.setInt(1, Integer.parseInt(activityId));
-                ps.setInt(2, Integer.parseInt(a.getMemberId()));
-                ps.setString(3, a.getAttendanceStatus());
+                String id = UUID.randomUUID().toString();
+                ps.setString(1, id);
+                ps.setString(2, activityId);
+                ps.setString(3, a.getMemberId());
+                ps.setString(4, a.getAttendanceStatus());
                 ps.addBatch();
             }
             ps.executeBatch();
@@ -31,12 +34,12 @@ public class AttendanceRepository {
         List<Attendance> list = new ArrayList<>();
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(activityId));
+            ps.setString(1, activityId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Attendance a = new Attendance();
-                a.setId(String.valueOf(rs.getInt("id")));
-                a.setMemberId(String.valueOf(rs.getInt("member_id")));
+                a.setId(rs.getString("id"));
+                a.setMemberId(rs.getString("member_id"));
                 a.setAttendanceStatus(rs.getString("attendance_status"));
                 list.add(a);
             }
@@ -50,8 +53,8 @@ public class AttendanceRepository {
         String sql = "SELECT 1 FROM attendance WHERE activity_id = ? AND member_id = ?";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(activityId));
-            ps.setInt(2, Integer.parseInt(memberId));
+            ps.setString(1, activityId);
+            ps.setString(2, memberId);
             ResultSet rs = ps.executeQuery();
             return rs.next();
         } catch (SQLException e) {

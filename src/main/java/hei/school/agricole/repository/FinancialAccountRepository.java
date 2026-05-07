@@ -17,7 +17,7 @@ public class FinancialAccountRepository {
         String sql = "SELECT * FROM financial_account WHERE id = ?";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(id));
+            ps.setString(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return mapRow(rs);
@@ -33,7 +33,7 @@ public class FinancialAccountRepository {
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setDouble(1, amount);
-            ps.setInt(2, Integer.parseInt(accountId));
+            ps.setString(2, accountId);
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -59,7 +59,7 @@ public class FinancialAccountRepository {
         List<FinancialAccount> accounts = new ArrayList<>();
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(collectivityId));
+            ps.setString(1, collectivityId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 accounts.add(mapRow(rs));
@@ -74,7 +74,7 @@ public class FinancialAccountRepository {
         String sql = "SELECT COALESCE(SUM(amount), 0) FROM collectivity_transaction WHERE account_credited_id = ? AND creation_date <= ?";
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(accountId));
+            ps.setString(1, accountId);
             ps.setDate(2, Date.valueOf(date));
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return rs.getDouble(1);
@@ -86,7 +86,7 @@ public class FinancialAccountRepository {
 
     private FinancialAccount mapRow(ResultSet rs) throws SQLException {
         String type = rs.getString("type");
-        String id = String.valueOf(rs.getInt("id"));
+        String id = rs.getString("id");
         double amount = rs.getDouble("amount");
         String collectivityId = rs.getString("collectivity_id");
         String holderName = rs.getString("holder_name");

@@ -19,12 +19,12 @@ public class CollectivityTransactionRepository {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             String id = UUID.randomUUID().toString();
             ps.setString(1, id);
-            ps.setInt(2, Integer.parseInt(tx.getCollectivityId()));
+            ps.setString(2, tx.getCollectivityId());
             ps.setDate(3, Date.valueOf(tx.getCreationDate()));
             ps.setDouble(4, tx.getAmount());
             ps.setString(5, tx.getPaymentMode().name());
-            ps.setInt(6, Integer.parseInt(tx.getAccountCreditedId()));
-            ps.setInt(7, Integer.parseInt(tx.getMemberDebitedId()));
+            ps.setString(6, tx.getAccountCreditedId());
+            ps.setString(7, tx.getMemberDebitedId());
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -36,7 +36,7 @@ public class CollectivityTransactionRepository {
         List<CollectivityTransaction> list = new ArrayList<>();
         try (Connection conn = DataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, Integer.parseInt(collectivityId));
+            ps.setString(1, collectivityId);
             ps.setDate(2, Date.valueOf(from));
             ps.setDate(3, Date.valueOf(to));
             ResultSet rs = ps.executeQuery();
@@ -46,8 +46,8 @@ public class CollectivityTransactionRepository {
                 tx.setCreationDate(rs.getDate("creation_date").toLocalDate());
                 tx.setAmount(rs.getDouble("amount"));
                 tx.setPaymentMode(PaymentMode.valueOf(rs.getString("payment_mode")));
-                tx.setAccountCreditedId(String.valueOf(rs.getInt("account_credited_id")));
-                tx.setMemberDebitedId(String.valueOf(rs.getInt("member_debited_id")));
+                tx.setAccountCreditedId(rs.getString("account_credited_id"));
+                tx.setMemberDebitedId(rs.getString("member_debited_id"));
                 list.add(tx);
             }
         } catch (SQLException e) {
