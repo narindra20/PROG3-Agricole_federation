@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/collectivites")
+@RequestMapping("/collectivities")
 public class ActivityController {
 
     private final ActivityService activityService;
